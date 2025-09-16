@@ -1,0 +1,23 @@
+[wokwi]
+version = 1
+firmware = "firmware.elf"
+elf = "firmware.elf"
+
+[chip]
+type = "esp32"
+
+[[components]]
+type = "dht11"
+pin = 15
+
+[[components]]
+type = "adc"   # mô phỏng cảm biến pH qua ADC
+pin = 34
+
+[[components]]
+type = "adc"   # mô phỏng cảm biến độ ẩm đất
+pin = 35
+
+[[components]]
+type = "ldr"   # cảm biến ánh sáng
+pin = 32
