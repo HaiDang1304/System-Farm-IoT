@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "author": "Tabo Troc",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 38.4, "left": 43.24, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -153.3, "left": 52.2, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 181.1, "left": -269, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot2", "top": -30.1, "left": -211.4, "attrs": {} },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr1", "top": 406.4, "left": 0.8, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": 308.7, "left": 399.1, "attrs": {} },
+    {
+      "type": "wokwi-lcd2004",
+      "id": "lcd1",
+      "top": -195.2,
+      "left": 303.2,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": -85.64, "left": 0, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd1", "top": -76.8, "left": 143.4, "rotate": 180, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc2", "top": -37.64, "left": -76.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd2", "top": 19.2, "left": -106.2, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd3", "top": 297.6, "left": -259.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd4", "top": 432, "left": 239.4, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd5", "top": 432, "left": 546.6, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd6", "top": -211.2, "left": 210.6, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc3", "top": 269.56, "left": -192, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc4", "top": 346.36, "left": 96, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc5", "top": 375.16, "left": 374.4, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc6", "top": -229.64, "left": 259.2, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb1", "top": -264.8, "left": -277.3, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb2", "top": -365.8, "left": -95.7, "attrs": {} }
+  ],
+  "connections": [
+    [ "dht1:SDA", "esp:15", "green", [ "v9.6", "h96.1", "v240" ] ],
+    [
+      "ultrasonic1:TRIG",
+      "esp:12",
+      "green",
+      [ "v19.2", "h-144.4", "v-153.6", "h-316.8", "v-86.4" ]
+    ],
+    [
+      "ultrasonic1:ECHO",
+      "esp:14",
+      "green",
+      [ "v28.8", "h-164", "v-153.6", "h-316.8", "v-105.6" ]
+    ],
+    [ "ldr1:AO", "esp:33", "green", [ "h19.2", "v28.1", "h-201.6", "v-364.8" ] ],
+    [ "pot1:SIG", "esp:35", "green", [ "v76.8", "h114.8", "v-153.6" ] ],
+    [ "pot2:SIG", "esp:34", "green", [ "v0" ] ],
+    [ "lcd1:SDA", "esp:21", "green", [ "h-96", "v240.2" ] ],
+    [ "lcd1:SCL", "esp:22", "green", [ "h-115.2", "v134.7" ] ],
+    [ "dht1:GND", "gnd1:GND", "black", [ "v19.2", "h38.4", "v-67.2", "h19.2" ] ],
+    [ "dht1:VCC", "vcc1:VCC", "red", [ "v9.6", "h-57.6" ] ],
+    [ "gnd6:GND", "lcd1:GND", "black", [ "v-9.6", "h19.2", "v38.4" ] ],
+    [ "vcc6:VCC", "lcd1:VCC", "red", [ "v0" ] ],
+    [ "pot2:VCC", "vcc2:VCC", "red", [ "v19.2", "h28" ] ],
+    [ "pot2:GND", "gnd2:GND", "black", [ "v28.8", "h0", "v9.6", "h67.2", "v-57.6" ] ],
+    [ "pot1:VCC", "vcc3:VCC", "red", [ "v0" ] ],
+    [ "gnd3:GND", "pot1:GND", "black", [ "v-38.4", "h38.4" ] ],
+    [ "ldr1:VCC", "vcc4:VCC", "red", [ "h9.6", "v-38.4" ] ],
+    [ "ldr1:GND", "gnd4:GND", "black", [ "h0" ] ],
+    [ "ultrasonic1:GND", "gnd5:GND", "black", [ "v0" ] ],
+    [ "vcc5:VCC", "ultrasonic1:VCC", "red", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
