@@ -1,10 +1,9 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword ,sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 
-// 🔹 cấu hình Firebase của bạn
 const firebaseConfig = {
   apiKey: "AIzaSyD4gCLnG_S0zYlioxIir70ETjtSou7qXug",
   authDomain: "iot-farm-9f505.firebaseapp.com",
@@ -23,4 +22,4 @@ const provider = new GoogleAuthProvider();
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-export { auth, provider, signInWithPopup, signOut, analytics, db, doc, setDoc };
+export { auth, provider, signInWithPopup, signOut, analytics, db, doc, setDoc, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword };

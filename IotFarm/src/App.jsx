@@ -1,8 +1,14 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Layout from "./components/Layout";
+import Register from "./pages/Register"; 
 
 function App() {
   const [isAuth, setIsAuth] = React.useState(!!localStorage.getItem("auth"));
@@ -10,8 +16,13 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Login */}
         <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
 
+        {/* Register */}
+        <Route path="/register" element={<Register />} />
+
+        {/* Home */}
         <Route
           path="/home"
           element={
@@ -24,6 +35,8 @@ function App() {
             )
           }
         />
+
+        {/* Sensors */}
         <Route
           path="/sensors"
           element={
@@ -37,6 +50,7 @@ function App() {
           }
         />
 
+        {/* Default */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
