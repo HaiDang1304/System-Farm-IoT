@@ -8,49 +8,41 @@ import {
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Layout from "./components/Layout";
-import Register from "./pages/Register"; 
+import Register from "./pages/Register";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 function App() {
-  const [isAuth, setIsAuth] = React.useState(!!localStorage.getItem("auth"));
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        //  Chỉ khi đã verify email mới được coi là đăng nhập
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <div className="p-4">Đang tải...</div>;
 
   return (
     <Router>
       <Routes>
-        {/* Login */}
-        <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
+      
+        <Route path="/login" element={currentUser ? <Navigate to="/home" /> : <Login />}/>
 
-        {/* Register */}
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={currentUser ? <Navigate to="/home" /> : <Register />} />
+        <Route path="/home" element={ currentUser ? ( <Layout> <Home /> </Layout> ) : ( <Navigate to="/login" /> ) } />
 
-        {/* Home */}
-        <Route
-          path="/home"
-          element={
-            isAuth ? (
-              <Layout setIsAuth={setIsAuth}>
-                <Home />
-              </Layout>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Sensors */}
-        <Route
-          path="/sensors"
-          element={
-            isAuth ? (
-              <Layout setIsAuth={setIsAuth}>
-                <div>Trang quản lý cảm biến</div>
-              </Layout>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Default */}
+      
+        <Route path="/sensors" element={ currentUser ? ( <Layout> <div>Trang quản lý cảm biến</div> </Layout> ) : ( <Navigate to="/login" /> )  }/>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>

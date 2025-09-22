@@ -11,21 +11,21 @@ const Sidebar = ({ setIsAuth }) => {
   const handleLogout = () => {
     signOut(auth).catch(() => {});
     localStorage.removeItem("auth");
-    setIsAuth(false);
+
     navigate("/login");
   };
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col">
+    <aside className="w-64 bg-gray-900 text-white flex flex-col fixed h-screen">
       <div className="p-6 text-2xl font-bold border-b border-gray-700">
         IoT Farm
       </div>
 
-      <nav className="flex-1 p-4 max-h-150 overflow-y-auto space-y-2">
+      <nav className="flex-1 p-4 overflow-y-auto space-y-2">
         <button
           onClick={() => navigate("/home")}
           className="w-full text-left px-4 py-2 rounded hover:bg-gray-700"
         >
-          Dashboard
+          Trang chủ
         </button>
         <button
           onClick={() => navigate("/sensors")}
@@ -41,7 +41,7 @@ const Sidebar = ({ setIsAuth }) => {
         </button>
       </nav>
 
-      <div className="p-4 border-t border-gray-700 items-centern justify-center text-center">
+      <div className="p-4 border-t border-gray-700 text-center">
         {user && (
           <>
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -53,14 +53,12 @@ const Sidebar = ({ setIsAuth }) => {
               <p className="font-semibold">{user.name}</p>
             </div>
 
-            
-              <button
-                className="text-sm text-white px-19 py-3 rounded-2xl font-bold bg-red-600 hover:bg-red-700 transition"
-                onClick={handleLogout}
-              >
-                Đăng xuất
-              </button>
-            
+            <button
+              className="text-sm text-white px-6 py-2 rounded-2xl font-bold bg-red-600 hover:bg-red-700 transition"
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </button>
           </>
         )}
       </div>

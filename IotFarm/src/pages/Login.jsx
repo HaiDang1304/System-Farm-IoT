@@ -10,8 +10,9 @@ import {
   signInWithEmailAndPassword,
 } from "../firebase";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
-const Login = ({ setIsAuth }) => {
+const Login = () => {
   const [email, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -19,17 +20,38 @@ const Login = ({ setIsAuth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
+      await user.reload();
 
       if (!user.emailVerified) {
-        alert("Vui lòng xác minh email trước khi đăng nhập.");
+        await Swal.fire({
+          icon: "warning",
+          title: "Email chưa xác minh",
+          text: "Vui lòng kiểm tra hộp thư và xác minh email trước khi đăng nhập.",
+        });
+       await auth.signOut(); 
         return;
       }
+
+      Swal.fire({
+        icon: "success",
+        title: "Đăng nhập thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
+        navigate("/home", { replace: true });
+      });
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      alert("Đăng nhập thất bại: " + error.message);
-      return;
+      Swal.fire({
+        icon: "error",
+        title: "Đăng nhập thất bại",
+        text: error.message,
+      });
     }
   };
 
@@ -37,6 +59,10 @@ const Login = ({ setIsAuth }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      let photoURL = user.photoURL;
+      if (photoURL && photoURL.includes("/a/")) {
+        photoURL = photoURL.replace("/a/", "/a-/");
+      }
 
       await setDoc(
         doc(db, "users", user.uid),
@@ -44,29 +70,28 @@ const Login = ({ setIsAuth }) => {
           uid: user.uid,
           name: user.displayName,
           email: user.email,
-          photo: user.photoURL,
-          type: "google", 
-          role: "user", 
+          photo: photoURL,
+          type: "google",
+          role: "user",
           lastLogin: new Date().toISOString(),
         },
         { merge: true }
       );
 
-      localStorage.setItem("auth", "true");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          photo: user.photoURL,
-        })
-      );
-
-      setIsAuth(true);
-      navigate("/home");
+      Swal.fire({
+        icon: "success",
+        title: "Đăng nhập Google thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
+        navigate("/home", { replace: true });
+      });
     } catch (error) {
-      console.error("Lỗi đăng nhập Google:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi đăng nhập Google",
+        text: error.message,
+      });
     }
   };
 
@@ -87,6 +112,7 @@ const Login = ({ setIsAuth }) => {
             value={email}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 rounded-lg outline-none transition"
+            required
           />
           <input
             type="password"
@@ -94,6 +120,7 @@ const Login = ({ setIsAuth }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 rounded-lg outline-none transition"
+            required
           />
           <button
             type="submit"

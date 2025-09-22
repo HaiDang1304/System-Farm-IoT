@@ -1,46 +1,82 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, createUserWithEmailAndPassword, sendEmailVerification, db, doc, setDoc } from "../firebase";
+import {
+  auth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  db,
+  doc,
+  setDoc,
+} from "../firebase";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-const handleRegister = async (e) => {
-  e.preventDefault();
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-    // Gửi email xác thực
-    await sendEmailVerification(user);
+    if (password !== confirmPassword) {
+      setMessage("❌ Mật khẩu không khớp.");
+      return;
+    }
+    const passwordRegex = /^[A-Za-z0-9]{6,}$/;
+    if (!passwordRegex.test(password)) {
+      setMessage(
+        "❌ Mật khẩu phải có ít nhất 6 ký tự và chỉ bao gồm chữ cái và số."
+      );
+      return;
+    }
 
-    // Lưu vào Firestore
-    await setDoc(
-      doc(db, "users", user.uid),
-      {
-        uid: user.uid,
-        name: username || user.displayName || "No Name",
-        email: user.email,
-        photo: user.photoURL || "",
-        type: "email",     
-        role: "user",        
-        createdAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
-    setMessage("✅ Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      await auth.signOut();
 
-    setTimeout(() => navigate("/login"), 3000);
-  } catch (error) {
-    console.error("Lỗi đăng ký:", error);
-    setMessage("❌ " + error.message);
-  }
-};
+      await sendEmailVerification(user);
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          uid: user.uid,
+          email: user.email,
+          photo: user.photoURL || "",
+          type: "email",
+          role: "user",
+          createdAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+  
+
+      Swal.fire({
+        icon: "success",
+        title: "Đăng ký thành công!",
+        text: "Vui lòng kiểm tra email để xác nhận trước khi đăng nhập.",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/login"); 
+      });
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi đăng ký",
+        text: error.message,
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-green-100">
@@ -54,14 +90,6 @@ const handleRegister = async (e) => {
 
         <form onSubmit={handleRegister} className="space-y-4">
           <input
-            type="text"
-            placeholder="Tên đăng nhập"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 rounded-lg outline-none transition"
-            required
-          />
-          <input
             type="email"
             placeholder="Email"
             value={email}
@@ -74,6 +102,14 @@ const handleRegister = async (e) => {
             placeholder="Mật khẩu"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 rounded-lg outline-none transition"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Nhập lại mật khẩu"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 rounded-lg outline-none transition"
             required
           />
