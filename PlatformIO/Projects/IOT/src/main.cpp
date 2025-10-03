@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
@@ -9,12 +10,15 @@
 #include <DHT.h>
 
 /**** MQTT ****/
-const char *MQTTServer = "broker.emqx.io";
-const char *MQTT_Topic = "HeThongNongTraiThongMinh"; // telemetry tổng
-const char *MQTT_ID = "esp32-farm01";
-int Port = 1883;
+// HiveMQ
+const char* mqtt_server = "b090ce6170974214b61d8a91f41c4da7.s1.eu.hivemq.cloud"; 
+const int mqtt_port = 8883;  // TLS
+const char* mqtt_user = "Tezzz";
+const char* mqtt_pass = "Haidang1304";
+const char* MQTT_Topic = "HeThongNongTraiThongMinh";
+const char* MQTT_ID = "esp32-farm01";
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 /**** NTP ****/
@@ -120,7 +124,7 @@ static void MQTT_Reconnect()
 {
   while (!client.connected())
   {
-    if (client.connect(MQTT_ID))
+    if (client.connect(MQTT_ID, mqtt_user, mqtt_pass))
     {
       Serial.println("MQTT connected");
       // Sub các kênh điều khiển
@@ -467,7 +471,9 @@ void setup()
 
   // WiFi + MQTT
   WIFIConnect();
-  client.setServer(MQTTServer, Port);
+  espClient.setInsecure();
+  client.setServer(mqtt_server, mqtt_port);
+  client.setBufferSize(2048);
   client.setCallback(callback);
 
   // NTP (nỗ lực sync ban đầu)
@@ -626,6 +632,12 @@ void loop()
   doc["th"]["soil"] = thSoil;
   doc["auto"]["rain"] = automodeRain;
   char out[1024];
-  size_t n = serializeJson(doc, out);
-  client.publish(MQTT_Topic, out, n);
+  serializeJson(doc, out);
+  
+  if (client.publish(MQTT_Topic, out)) {
+    Serial.println("[PUBLISH] Gửi thành công!");
+  } else {
+    Serial.print("[PUBLISH] Thất bại! State: ");
+    Serial.println(client.state());
+  }
 }
