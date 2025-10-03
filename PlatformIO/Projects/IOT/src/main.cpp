@@ -30,7 +30,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
-#define SOIL_PIN 34 // Độ ẩm đất (POT) -> ADC34
+#define SOIL_PIN 34 // Độ ẩm đất (POT) -> ADC3
 #define GAS_PIN 35  // MQ2 AOUT -> ADC35
 #define LDR_PIN 32  // LDR AO -> ADC32
 #define TRIG_PIN 26 // HC-SR04 TRIG -> GPIO26
