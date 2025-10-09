@@ -10,7 +10,6 @@ import {
   Sun,
 } from "lucide-react";
 import WeatherWidget from "../components/WeatherWeget";
-import WeatherChart from "../components/WeatherChart";
 
 const Home = () => {
   return (
@@ -97,7 +96,6 @@ const Home = () => {
           </h2>
         </div>
         <WeatherWidget />
-        <WeatherChart />
       </div>
     </div>
     
