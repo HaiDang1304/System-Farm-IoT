@@ -19,7 +19,6 @@ function App() {
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
-        //  Chỉ khi đã verify email mới được coi là đăng nhập
         setCurrentUser(user);
       } else {
         setCurrentUser(null);
