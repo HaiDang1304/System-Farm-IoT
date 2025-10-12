@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import WeatherWidget from "../components/WeatherWeget";
 
-const API_URL = "http://localhost:3000/data"; // URL backend Node.js của anh
+const API_URL = "http://localhost:3000/data"; // URL backend Node.js
 
 const Home = () => {
   const [sensorData, setSensorData] = useState(null);
@@ -37,8 +37,15 @@ const Home = () => {
 
   if (!sensorData)
     return (
-      <div className="text-center p-12 text-gray-500">Đang tải dữ liệu cảm biến...</div>
+      <div className="text-center p-12 text-gray-500">
+        Đang tải dữ liệu cảm biến...
+      </div>
     );
+
+  // Xử lý timestamp từ Firestore
+  const timeString = sensorData.timestamp?._seconds
+    ? new Date(sensorData.timestamp._seconds * 1000).toLocaleTimeString()
+    : "N/A";
 
   return (
     <div className="bg-gray-50 p-8">
@@ -54,10 +61,20 @@ const Home = () => {
             <Thermometer className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến DHT22</h3>
           </div>
-          <p>💧 Độ ẩm không khí: <span className="text-green-600 font-semibold">{sensorData.humidity}%</span></p>
-          <p>🌡️ Nhiệt độ: <span className="text-red-500 font-semibold">{sensorData.temperature}°C</span></p>
+          <p>
+            💧 Độ ẩm không khí:{" "}
+            <span className="text-green-600 font-semibold">
+              {sensorData.doam}%
+            </span>
+          </p>
+          <p>
+            🌡️ Nhiệt độ:{" "}
+            <span className="text-red-500 font-semibold">
+              {sensorData.nhietdo}°C
+            </span>
+          </p>
           <p>📊 Trạng thái: <span className="text-gray-700 font-medium">Ổn định</span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
         {/* Cảm biến độ ẩm đất */}
@@ -66,10 +83,25 @@ const Home = () => {
             <Droplets className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến độ ẩm đất</h3>
           </div>
-          <p>💧 Độ ẩm đất: <span className="text-blue-500 font-semibold">{sensorData.soilMoisture}%</span></p>
-          <p>🌱 Đánh giá: <span className="text-yellow-600 font-medium">{sensorData.soilMoisture < 40 ? "Hơi khô" : "Ổn định"}</span></p>
-          <p>📊 Trạng thái: <span className="text-gray-700 font-medium">{sensorData.soilMoisture < 40 ? "Cần tưới sớm" : "Bình thường"}</span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>
+            💧 Độ ẩm đất:{" "}
+            <span className="text-blue-500 font-semibold">
+              {sensorData.doamdat}%
+            </span>
+          </p>
+          <p>
+            🌱 Đánh giá:{" "}
+            <span className="text-yellow-600 font-medium">
+              {sensorData.doamdat < 40 ? "Hơi khô" : "Ổn định"}
+            </span>
+          </p>
+          <p>
+            📊 Trạng thái:{" "}
+            <span className="text-gray-700 font-medium">
+              {sensorData.doamdat < 40 ? "Cần tưới sớm" : "Bình thường"}
+            </span>
+          </p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
         {/* Cảm biến ánh sáng */}
@@ -78,10 +110,20 @@ const Home = () => {
             <Sun className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến ánh sáng</h3>
           </div>
-          <p>☀️ Cường độ: <span className="text-amber-500 font-semibold">{sensorData.light} lux</span></p>
-          <p>🌞 Mức đánh giá: <span className="text-green-600 font-medium">{sensorData.light > 600 ? "Tốt cho cây" : "Thiếu sáng"}</span></p>
+          <p>
+            ☀️ Cường độ:{" "}
+            <span className="text-amber-500 font-semibold">
+              {sensorData.anhsang} lux
+            </span>
+          </p>
+          <p>
+            🌞 Mức đánh giá:{" "}
+            <span className="text-green-600 font-medium">
+              {sensorData.anhsang > 600 ? "Tốt cho cây" : "Thiếu sáng"}
+            </span>
+          </p>
           <p>📊 Trạng thái: <span className="text-gray-700 font-medium">Ổn định</span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
         {/* Mực nước */}
@@ -90,9 +132,19 @@ const Home = () => {
             <Cloud className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến mực nước</h3>
           </div>
-          <p>🌊 Mực nước bể: <span className="text-purple-600 font-semibold">{sensorData.waterLevel}%</span></p>
-          <p>📊 Trạng thái: <span className="text-green-600 font-medium">{sensorData.waterLevel < 30 ? "Thiếu nước" : "Đủ nước"}</span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>
+            🌊 Mực nước bể:{" "}
+            <span className="text-purple-600 font-semibold">
+              {sensorData.khoangcach} cm
+            </span>
+          </p>
+          <p>
+            📊 Trạng thái:{" "}
+            <span className="text-green-600 font-medium">
+              {sensorData.khoangcach > 20 ? "Thiếu nước" : "Đủ nước"}
+            </span>
+          </p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
         {/* Cảm biến mưa */}
@@ -101,9 +153,14 @@ const Home = () => {
             <TreePine className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến mưa</h3>
           </div>
-          <p>🌧️ Tình trạng: <span className="text-teal-600 font-semibold">{sensorData.rain > 0 ? "Có mưa" : "Trời khô"}</span></p>
-          <p>📊 Cường độ: <span className="text-gray-700 font-medium">{sensorData.rain} mm/h</span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>
+            🌧️ Tình trạng:{" "}
+            <span className="text-teal-600 font-semibold">
+              {sensorData.mua > 0 ? "Có mưa" : "Trời khô"}
+            </span>
+          </p>
+          <p>📊 Cường độ: <span className="text-gray-700 font-medium">{sensorData.mua} mm/h</span></p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
         {/* Cảm biến khí gas */}
@@ -112,11 +169,23 @@ const Home = () => {
             <Activity className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến khí gas</h3>
           </div>
-          <p>🔥 Nồng độ gas: <span className="text-pink-600 font-semibold">{sensorData.gas}%</span></p>
-          <p>⚠️ Trạng thái: <span className={`font-medium ${sensorData.gas > 0.05 ? "text-red-500" : "text-green-600"}`}>
-            {sensorData.gas > 0.05 ? "Nguy hiểm" : "An toàn"}
-          </span></p>
-          <p>⏱ Cập nhật: <span className="text-gray-500">{new Date(sensorData.timestamp).toLocaleTimeString()}</span></p>
+          <p>
+            🔥 Nồng độ gas:{" "}
+            <span className="text-pink-600 font-semibold">
+              {sensorData.khigas} ppm
+            </span>
+          </p>
+          <p>
+            ⚠️ Trạng thái:{" "}
+            <span
+              className={`font-medium ${
+                sensorData.khigas > 200 ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {sensorData.khigas > 200 ? "Nguy hiểm" : "An toàn"}
+            </span>
+          </p>
+          <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
         </div>
 
       </div>
