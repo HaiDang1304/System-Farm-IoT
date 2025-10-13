@@ -7,8 +7,9 @@ import {
 } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Layout from "./components/Layout";
 import Register from "./pages/Register";
+import Layout from "./components/Layout";
+import DHT22 from "./pages/DHT22";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -25,7 +26,6 @@ function App() {
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -34,15 +34,30 @@ function App() {
   return (
     <Router>
       <Routes>
-      
-        <Route path="/login" element={currentUser ? <Navigate to="/home" /> : <Login />}/>
+        {/* Các route công khai */}
+        <Route
+          path="/login"
+          element={currentUser ? <Navigate to="/home" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={currentUser ? <Navigate to="/home" /> : <Register />}
+        />
 
-        <Route path="/register" element={currentUser ? <Navigate to="/home" /> : <Register />} />
-        <Route path="/home" element={ currentUser ? ( <Layout> <Home /> </Layout> ) : ( <Navigate to="/login" /> ) } />
+        {/* Layout cha: chỉ vào được khi đã đăng nhập */}
+        <Route
+          path="/"
+          element={currentUser ? <Layout /> : <Navigate to="/login" />}
+        >
+          <Route path="home" element={<Home />} />
+          <Route path="dht22" element={<DHT22 />} />
+          <Route path="sensors" element={<div>Trang quản lý cảm biến</div>} />
+          <Route path="settings" element={<div>Trang cài đặt</div>} />
+          {/* thêm các trang khác ở đây */}
+        </Route>
 
-      
-        <Route path="/sensors" element={ currentUser ? ( <Layout> <div>Trang quản lý cảm biến</div> </Layout> ) : ( <Navigate to="/login" /> )  }/>
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Redirect mặc định */}
+        <Route path="*" element={<Navigate to="/home" />} />
       </Routes>
     </Router>
   );
