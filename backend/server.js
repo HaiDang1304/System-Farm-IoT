@@ -70,6 +70,26 @@ app.get("/data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ====== API GỬI LỆNH ĐIỀU KHIỂN ======
+app.post("/control", (req, res) => {
+  const { device, action } = req.body; // ví dụ { device: "fan", action: "ON" }
+
+  if (!device || !action) {
+    return res.status(400).json({ error: "Thiếu tham số device hoặc action" });
+  }
+
+  const commandTopic = process.env.MQTT_CONTROL_TOPIC || "iot/control";
+  const message = JSON.stringify({ device, action });
+
+  client.publish(commandTopic, message, { qos: 1 }, (err) => {
+    if (err) {
+      console.error("❌ Lỗi publish:", err);
+      return res.status(500).json({ error: "Không gửi được lệnh MQTT" });
+    }
+    console.log(`📤 Gửi lệnh MQTT: ${message}`);
+    res.json({ success: true, sent: message });
+  });
+});
 
 // ====== KHỞI CHẠY SERVER ======
 const PORT = process.env.PORT || 3000;
