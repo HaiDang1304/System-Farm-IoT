@@ -80,7 +80,7 @@
           </Link>
 
           {/* Cảm biến độ ẩm đất */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition">
+          <Link to="/soilmoisture" className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition">
             <div className="flex items-center gap-3 text-indigo-600 mb-4">
               <Droplets className="w-6 h-6" />
               <h3 className="text-lg font-bold">Cảm biến độ ẩm đất</h3>
@@ -104,7 +104,7 @@
               </span>
             </p>
             <p>⏱ Cập nhật: <span className="text-gray-500">{timeString}</span></p>
-          </div>
+          </Link>
 
           {/* Cảm biến ánh sáng */}
           <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition">
