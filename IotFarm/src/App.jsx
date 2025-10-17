@@ -13,6 +13,7 @@ import DHT22 from "./pages/DHT22";
 import SoilMoistureSensor from "./pages/SoilMoistureSensor";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import LightSensor from "./pages/LightSensor";
 
 function App() {
   const [currentUser, setCurrentUser] = React.useState(null);
@@ -53,6 +54,7 @@ function App() {
           <Route path="home" element={<Home />} />
           <Route path="dht22" element={<DHT22 />} />
           <Route path="soilmoisture" element={<SoilMoistureSensor />} />
+          <Route path="lightsensor" element={<LightSensor/>} />
           <Route path="sensors" element={<div>Trang quản lý cảm biến</div>} />
           <Route path="settings" element={<div>Trang cài đặt</div>} />
           {/* thêm các trang khác ở đây */}

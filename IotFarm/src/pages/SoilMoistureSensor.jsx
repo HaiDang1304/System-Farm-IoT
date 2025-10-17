@@ -1,21 +1,51 @@
-import ChartDHT22 from "../components/ChartDHT22";
-import DHT22 from "./DHT22";
+import { use, useEffect, useState } from "react";
+import ChartSoilMoisture from "../components/ChartSoilMoisture";
+
+const API_URL = "http://localhost:3000/data";
 
 const SoilMoistureSensor = () => {
+  const [sensorData, setSensorData] = useState({ doamdat: 0 });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        console.log("Dữ liệu độ ẩm đất:", data.doamdat);
+        setSensorData(Array.isArray(data) ? data[0] : data);
+      } catch (error) {
+        console.error("Lỗi không fecth được <!DOCTYPE html>:", error);
+      }
+    };
+    fetchData();
+
+    const interval = setInterval(fetchData, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="p-4">
       <h2 className="text-3xl font-semibold text-blue-500 text-center">
-        Soil Moisture Sensor Page
+        Giám Sát Độ Ẩm Đất
       </h2>
+      <p className="text-md text-gray-500 text-center mt-2">Bằng cảm biến độ ẩm đất</p>
       <p className="text-2xl font-medium mt-3">Thông tin độ ẩm đất</p>
       <div className="flex flex-wrap gap-4 mt-4 min-h-full">
         <div className="flex-1 bg-blue-200 rounded-xl py-10">
-          <p className="text-lg px-2 font-medium"> Độ ẩm đất (%):</p>
+          <div className="flex items-center ml-5">
+            <p className="text-lg px-2 font-medium">Độ ẩm đất hiện tại:</p>
+            <span className="text-2xl text-red-500 font-semibold">
+              {sensorData.doamdat}°F
+            </span>
+          </div>
         </div>
         <div className="flex-1 bg-green-200 rounded-xl py-10">
           <div className="flex justify-between items-center px-2">
             <p className="text-lg px-2 font-medium">Trạng thái bơm tới: </p>
-            <button className=" px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Bật /Tắt </button>
+            <button className=" px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+              Bật /Tắt{" "}
+            </button>
           </div>
         </div>
       </div>
@@ -47,7 +77,7 @@ const SoilMoistureSensor = () => {
           </button>
         </div>
         <p className="text-lg font-medium mt-6">Ngưỡng hiện tại: </p>
-        <ChartDHT22 />
+        <ChartSoilMoisture />
       </div>
     </div>
   );
