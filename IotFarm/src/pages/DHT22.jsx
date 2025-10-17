@@ -107,7 +107,7 @@ const DHT22 = () => {
     setCurrentThreshold(parseFloat(threshold));
     const msg = `Đã cập nhật ngưỡng điều hòa: ${threshold}°C`;
     setVoiceMessage(msg);
-    speak(msg); 
+    speak(msg);
     setThreshold("");
   };
 
@@ -150,7 +150,7 @@ const DHT22 = () => {
       }
 
       setVoiceMessage(msg);
-      speak(msg); 
+      speak(msg);
     };
 
     recognition.onerror = (event) => {
@@ -238,9 +238,14 @@ const DHT22 = () => {
           </div>
           <button
             onClick={() => handleToggleAC()}
+            disabled={isAutoMode} 
             className={`px-6 py-2 rounded-lg text-white transition duration-200 ${
               isACOn
-                ? "bg-gray-400 hover:bg-gray-500"
+                ? isAutoMode
+                  ? "bg-gray-300 cursor-not-allowed" 
+                  : "bg-gray-400 hover:bg-gray-500"
+                : isAutoMode
+                ? "bg-gray-300 cursor-not-allowed"
                 : "bg-green-500 hover:bg-green-600"
             }`}
           >

@@ -65,6 +65,8 @@ bool automodeLdr = true;     // đèn theo ánh sáng
 bool automodeHcsr04 = true;  // bơm bể theo mực nước
 bool automodeDoamdat = true; // bơm tưới theo ẩm đất
 bool automodeMua = true;     // mái che theo mưa
+bool manualAC = false;       // false = tự động, true = thủ công
+bool acState = false;        // lưu trạng thái hiện tại
 
 float nguongDht = 25.0;    // °C
 int nguongMq2 = 2500;      // raw 0..4095
@@ -313,22 +315,30 @@ void callback(char *topic, byte *message, unsigned int length)
   // ----------- DHT / AC -----------
   if (String(topic) == "HeThongNongTraiThongMinh/DHT22/Control/AC")
   {
-    if (stMessage == "AC_ON")
+    StaticJsonDocument<128> doc;
+    DeserializationError err = deserializeJson(doc, stMessage);
+    if (!err)
     {
-      digitalWrite(dieuhoa, HIGH);
-      Serial.println("Dieu hoa da BAT");
-    }
-    if (stMessage == "AC_OFF")
-    {
-      digitalWrite(dieuhoa, LOW);
-      Serial.println("Dieu hoa da TAT");
+      String action = doc["action"];
+      manualAC = true; // bật chế độ thủ công
+      if (action == "ON")
+      {
+        digitalWrite(dieuhoa, HIGH);
+        acState = true;
+      }
+      else if (action == "OFF")
+      {
+        digitalWrite(dieuhoa, LOW);
+        acState = false;
+      }
+      Serial.println("AC manual set: " + String(acState ? "ON" : "OFF"));
     }
   }
 
-  if (String(topic) == "HeThongNongTraiThongMinh/DHT22/Control/automodeDht")
+  if (String(topic) == "HeThongNongTraiThongMinh/DHT22/Control/ACMode")
   {
-    automodeDht = (stMessage == "ON");
-    Serial.println("Chuc nang tu dong DHT22: " + String(automodeDht ? "ON" : "OFF"));
+    manualAC = (stMessage == "MANUAL");
+    Serial.println("AC mode: " + String(manualAC ? "MANUAL" : "AUTO"));
   }
 
   if (String(topic) == "HeThongNongTraiThongMinh/DHT22/Control/ThresholdDht")
@@ -688,10 +698,11 @@ void loop()
     float khoangcach = dur * 0.034f / 2.0;
 
     // ---- Điều khiển tự động (và log giống console cũ) ----
-    if (!isnan(nhietdo) && automodeDht)
-    {
-      digitalWrite(dieuhoa, nhietdo > nguongDht ? HIGH : LOW);
-      Serial.println("Dieu hoa dang " + String(nhietdo > nguongDht ? "ON" : "OFF"));
+    if (!isnan(nhietdo) && automodeDht && !manualAC)
+    { // chỉ tự động khi không manual
+      bool shouldAC = nhietdo > nguongDht;
+      digitalWrite(dieuhoa, shouldAC ? HIGH : LOW);
+      acState = shouldAC;
     }
 
     if (!isnan(mq2_value) && automodeMq2)

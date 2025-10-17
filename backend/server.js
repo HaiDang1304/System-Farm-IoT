@@ -11,13 +11,13 @@ const serviceAccount = {
   type: process.env.FIREBASE_TYPE,
   project_id: process.env.FIREBASE_PROJECT_ID,
   private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
   client_email: process.env.FIREBASE_CLIENT_EMAIL,
   client_id: process.env.FIREBASE_CLIENT_ID,
   auth_uri: process.env.FIREBASE_AUTH_URI,
   token_uri: process.env.FIREBASE_TOKEN_URI,
   auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
 };
 
 admin.initializeApp({
@@ -70,11 +70,12 @@ client.on("message", async (topic, message) => {
 // ====== API CHO FRONTEND ======
 app.get("/data", async (req, res) => {
   try {
-    const snapshot = await db.collection("sensorData")
+    const snapshot = await db
+      .collection("sensorData")
       .orderBy("timestamp", "desc")
       .limit(10)
       .get();
-    const data = snapshot.docs.map(doc => doc.data());
+    const data = snapshot.docs.map((doc) => doc.data());
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -88,7 +89,7 @@ app.post("/control", (req, res) => {
     return res.status(400).json({ error: "Thiếu tham số device hoặc action" });
   }
 
-  const commandTopic = process.env.MQTT_CONTROL_TOPIC || "iot/control";
+  const commandTopic = "HeThongNongTraiThongMinh/DHT22/Control/AC";
   const message = JSON.stringify({ device, action });
 
   client.publish(commandTopic, message, { qos: 1 }, (err) => {
