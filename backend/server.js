@@ -3,15 +3,23 @@ import cors from "cors";
 import mqtt from "mqtt";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
-import { createRequire } from "module"; // 👈 thêm dòng này
 
-// Tạo hàm require dùng trong môi trường ES Module
-const require = createRequire(import.meta.url);
-const serviceAccount = require("./firebase-key.json"); // 👈 dùng được rồi
+dotenv.config(); // load .env
 
-dotenv.config();
+// ====== KHỞI TẠO FIREBASE TỪ ENV ======
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE,
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+};
 
-// ====== KHỞI TẠO FIREBASE ======
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.FIREBASE_DB_URL,
@@ -24,10 +32,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ====== KẾT NỐI MQTT (HiveMQ Cloud) ======
+// ====== KẾT NỐI MQTT ======
 const options = {
   host: process.env.MQTT_HOST,
-  port: process.env.MQTT_PORT,
+  port: Number(process.env.MQTT_PORT),
   protocol: "mqtts",
   username: process.env.MQTT_USERNAME,
   password: process.env.MQTT_PASSWORD,
@@ -47,7 +55,6 @@ client.on("message", async (topic, message) => {
     const payload = JSON.parse(message.toString());
     console.log("📥 Nhận dữ liệu:", payload);
 
-    // Lưu vào Firestore
     await db.collection("sensorData").add({
       ...payload,
       topic,
@@ -63,16 +70,19 @@ client.on("message", async (topic, message) => {
 // ====== API CHO FRONTEND ======
 app.get("/data", async (req, res) => {
   try {
-    const snapshot = await db.collection("sensorData").orderBy("timestamp", "desc").limit(10).get();
+    const snapshot = await db.collection("sensorData")
+      .orderBy("timestamp", "desc")
+      .limit(10)
+      .get();
     const data = snapshot.docs.map(doc => doc.data());
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-// ====== API GỬI LỆNH ĐIỀU KHIỂN ======
+
 app.post("/control", (req, res) => {
-  const { device, action } = req.body; // ví dụ { device: "fan", action: "ON" }
+  const { device, action } = req.body;
 
   if (!device || !action) {
     return res.status(400).json({ error: "Thiếu tham số device hoặc action" });
