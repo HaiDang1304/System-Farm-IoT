@@ -68,7 +68,7 @@ const DHT22 = () => {
       headers: {
         "Content-Type": "application/json", // backend mong đợi JSON
       },
-      body: JSON.stringify({ device: "ac", action }), // gửi device + action
+      body: JSON.stringify({ device: "AC", action }), // gửi device + action
     })
       .then((res) => {
         if (!res.ok) {

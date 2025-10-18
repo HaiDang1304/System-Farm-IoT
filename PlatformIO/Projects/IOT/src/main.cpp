@@ -182,7 +182,7 @@ void controlStepperMotorBe(bool on)
 
 void runStepperMotorBe()
 {
-  if (!motorBeRunning)
+  if (motorBeRunning)
   {
     unsigned long currentTime = micros();
     if (currentTime - lastStepTimeBe >= stepIntervaBe)
@@ -211,7 +211,7 @@ void controlStepperMotorTuoi(bool on)
 
 void runStepperMotorTuoi()
 {
-  if (!motorTuoiRunning)
+  if (motorTuoiRunning)
   {
     unsigned long now = micros();
     if (now - lastStepTimeTuoi >= stepIntervalTuoi)
@@ -446,10 +446,26 @@ void callback(char *topic, byte *message, unsigned int length)
       Serial.println("Ngưỡng độ ẩm đất mới: " + String(nguongDoamdat));
     }
   }
+  
+  // ----------- Độ ẩm đất / bơm tưới -----------
   if (String(topic) == "HeThongNongTraiThongMinh/Doamdat/Control/MOTOR")
   {
     automodeDoamdat = false;
-    controlStepperMotorTuoi(stMessage == "MOTOR_ON");
+    StaticJsonDocument<128> doc;
+    if (deserializeJson(doc, stMessage))
+      return;
+
+    String action = doc["action"] | "";
+    if (action == "ON")
+    {
+      controlStepperMotorTuoi(true);
+      Serial.println("💧 Bật bơm tưới");
+    }
+    else if (action == "OFF")
+    {
+      controlStepperMotorTuoi(false);
+      Serial.println("💧 Tắt bơm tưới");
+    }
   }
 
   // ----------- Mưa / mái che -----------

@@ -82,6 +82,41 @@ app.get("/data", async (req, res) => {
   }
 });
 
+// ====== BẢNG MAP CÁC THIẾT BỊ → TOPIC ======
+const topicMap = {
+  // --- DHT22 ---
+  "AC": "HeThongNongTraiThongMinh/DHT22/Control/AC",
+  "AutoDht": "HeThongNongTraiThongMinh/DHT22/Control/automodeDht",
+  "ThresholdDht": "HeThongNongTraiThongMinh/DHT22/Control/ThresholdDht",
+
+  // --- KHÍ GAS MQ2 ---
+  "Buzzer": "HeThongNongTraiThongMinh/KhiGas/Control/BUZZER",
+  "AutoMq2": "HeThongNongTraiThongMinh/KhiGas/Control/automodeMq2",
+  "ThresholdMq2": "HeThongNongTraiThongMinh/KhiGas/Control/ThresholdMq2",
+
+  // --- ÁNH SÁNG (LDR) ---
+  "Led": "HeThongNongTraiThongMinh/LDR/Control/LED",
+  "AutoLdr": "HeThongNongTraiThongMinh/LDR/Control/automodeLdr",
+  "ThresholdLdr": "HeThongNongTraiThongMinh/LDR/Control/ThresholdLdr",
+  "ScheduleLed": "HeThongNongTraiThongMinh/LDR/Control/ScheduleLed",
+  "DeleteScheduleLed": "HeThongNongTraiThongMinh/LDR/Control/DeleteScheduleLed",
+
+  // --- MỰC NƯỚC (HCSR04) ---
+  "PumpTank": "HeThongNongTraiThongMinh/HCSR04/Control/MOTOR",
+  "AutoHcsr04": "HeThongNongTraiThongMinh/HCSR04/Control/automodeHcsr04",
+  "ThresholdHcsr04": "HeThongNongTraiThongMinh/HCSR04/Control/ThresholdHcsr04",
+
+  // --- ĐỘ ẨM ĐẤT ---
+  "WaterPump": "HeThongNongTraiThongMinh/Doamdat/Control/MOTOR",
+  "AutoDoamdat": "HeThongNongTraiThongMinh/Doamdat/Control/automodeDoamdat",
+  "ThresholdDoamdat": "HeThongNongTraiThongMinh/Doamdat/Control/nguongbatmaybomtuoicay",
+
+  // --- MÁI CHE MƯA ---
+  "Roof": "HeThongNongTraiThongMinh/Mua/Control/Maiche",
+  "AutoMua": "HeThongNongTraiThongMinh/Mua/Control/automodeMua",
+};
+
+// ====== API ĐIỀU KHIỂN THIẾT BỊ ======
 app.post("/control", (req, res) => {
   const { device, action } = req.body;
 
@@ -89,16 +124,21 @@ app.post("/control", (req, res) => {
     return res.status(400).json({ error: "Thiếu tham số device hoặc action" });
   }
 
-  const commandTopic = "HeThongNongTraiThongMinh/DHT22/Control/AC";
+  const topic = topicMap[device];
+  if (!topic) {
+    return res.status(400).json({ error: `Không tìm thấy topic cho thiết bị: ${device}` });
+  }
+
   const message = JSON.stringify({ device, action });
 
-  client.publish(commandTopic, message, { qos: 1 }, (err) => {
+  client.publish(topic, message, { qos: 1 }, (err) => {
     if (err) {
       console.error("❌ Lỗi publish:", err);
       return res.status(500).json({ error: "Không gửi được lệnh MQTT" });
     }
-    console.log(`📤 Gửi lệnh MQTT: ${message}`);
-    res.json({ success: true, sent: message });
+
+    console.log(`📤 Gửi MQTT: ${topic} -> ${message}`);
+    res.json({ success: true, topic, sent: message });
   });
 });
 
