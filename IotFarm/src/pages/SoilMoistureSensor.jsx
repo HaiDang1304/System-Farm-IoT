@@ -11,7 +11,7 @@ const SoilMoistureSensor = () => {
   const [threshold, setThreshold] = useState(2000);
   const [inputThreshold, setInputThreshold] = useState("");
 
-  // 🔊 Hàm nói
+  //  Hàm nói
   const speak = (text) => {
     if (!window.speechSynthesis) return;
     const utter = new SpeechSynthesisUtterance(text);
@@ -24,7 +24,7 @@ const SoilMoistureSensor = () => {
     window.speechSynthesis.speak(utter);
   };
 
-  // 🧠 Hàm điều khiển máy bơm (gửi lệnh đến server)
+  //  Hàm điều khiển máy bơm (gửi lệnh đến server)
   const handleTogglePump = (forceState = null) => {
     const newState = forceState !== null ? forceState : !isPumpOn;
     const action = newState ? "ON" : "OFF";
@@ -48,7 +48,7 @@ const SoilMoistureSensor = () => {
       });
   };
 
-  // 🌱 Lấy dữ liệu cảm biến định kỳ
+  //  Lấy dữ liệu cảm biến định kỳ
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,7 +75,7 @@ const SoilMoistureSensor = () => {
     return () => clearInterval(interval);
   }, [autoMode, isPumpOn, threshold]);
 
-  // 🎙️ Điều khiển bằng giọng nói
+  //  Điều khiển bằng giọng nói
   const startVoiceControl = () => {
     if (!("webkitSpeechRecognition" in window)) {
       alert("Trình duyệt của bạn không hỗ trợ điều khiển giọng nói.");
@@ -95,10 +95,10 @@ const SoilMoistureSensor = () => {
         handleTogglePump(true);
       } else if (transcript.includes("tắt máy bơm")) {
         handleTogglePump(false);
-      } else if (transcript.includes("bật chế độ tự động")) {
+      } else if (transcript.includes("bật tự động")) {
         setAutoMode(true);
         speak("Đã bật chế độ tự động tưới nước.");
-      } else if (transcript.includes("tắt chế độ tự động")) {
+      } else if (transcript.includes("tắt tự động")) {
         setAutoMode(false);
         speak("Đã tắt chế độ tự động tưới nước.");
       } else {
@@ -124,7 +124,7 @@ const SoilMoistureSensor = () => {
     speak(msg);
   };
 
-  // ⚙️ Cập nhật ngưỡng tự động
+  //  Cập nhật ngưỡng tự động
   const updateThreshold = () => {
     const newValue = parseInt(inputThreshold);
     if (isNaN(newValue)) {

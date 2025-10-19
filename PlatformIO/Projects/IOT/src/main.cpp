@@ -68,6 +68,8 @@ bool automodeMua = true;     // mái che theo mưa
 bool manualAC = false;       // false = tự động, true = thủ công
 bool acState = false;        // lưu trạng thái hiện tại
 
+bool manualLed = false; // true khi LED đang được điều khiển thủ công
+
 float nguongDht = 25.0;    // °C
 int nguongMq2 = 2500;      // raw 0..4095
 int nguongLdr = 1200;      // dùng LDR đảo
@@ -265,7 +267,7 @@ void callback(char *topic, byte *message, unsigned int length)
   }
   Serial.println("Noi dung: " + stMessage);
 
-  // ----------- LED & lịch -----------
+  // ----------- LỊCH BẬT/TẮT ĐÈN -----------
   if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ScheduleLed")
   {
     if (scheduleCount < 10)
@@ -292,14 +294,6 @@ void callback(char *topic, byte *message, unsigned int length)
                      String(schedules[scheduleCount].hour) + ":" + String(schedules[scheduleCount].minute) + " - " +
                      (schedules[scheduleCount].state ? "ON" : "OFF"));
       scheduleCount++;
-      Serial.println("Danh sach lich hien tai (so luong: " + String(scheduleCount) + "):");
-      for (int i = 0; i < scheduleCount; i++)
-      {
-        Serial.println("Lich " + String(i) + ": " + String(schedules[i].year) + "/" +
-                       String(schedules[i].month) + "/" + String(schedules[i].day) + " " +
-                       String(schedules[i].hour) + ":" + String(schedules[i].minute) + " - " +
-                       (schedules[i].state ? "ON" : "OFF") + ", executed: " + String(schedules[i].executed));
-      }
     }
     else
     {
@@ -307,9 +301,41 @@ void callback(char *topic, byte *message, unsigned int length)
     }
   }
 
+  // ----------- XÓA LỊCH LED -----------
   if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/DeleteScheduleLed")
   {
     Serial.println("Nhan lenh xoa lich tai vi tri: " + stMessage + ", bo qua vi cleanupSchedules da xu ly");
+  }
+
+  // ----------- BẬT / TẮT LED NGAY LẬP TỨC -----------
+  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/LED")
+  {
+    StaticJsonDocument<256> doc;
+    DeserializationError error = deserializeJson(doc, stMessage);
+    if (error)
+    {
+      Serial.println("Lỗi parse JSON LED: " + String(error.c_str()));
+      return;
+    }
+
+    String device = doc["device"];
+    String action = doc["action"];
+
+    if (device.equalsIgnoreCase("LED"))
+    {
+      manualLed = true; // bật chế độ thủ công
+
+      if (action.equalsIgnoreCase("ON"))
+      {
+        digitalWrite(led, HIGH);
+        Serial.println("💡 Đèn LED đã BẬT (thủ công)");
+      }
+      else if (action.equalsIgnoreCase("OFF"))
+      {
+        digitalWrite(led, LOW);
+        Serial.println("💡 Đèn LED đã TẮT (thủ công)");
+      }
+    }
   }
 
   // ----------- DHT / AC -----------
@@ -383,38 +409,38 @@ void callback(char *topic, byte *message, unsigned int length)
     }
   }
 
-  // ----------- LDR -----------
-  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/LED")
-  {
-    if (stMessage == "LIGHT_ON")
-    {
-      digitalWrite(led, HIGH);
-      automodeLdr = false;
-      Serial.println("Den da BAT");
-    }
-    else if (stMessage == "LIGHT_OFF")
-    {
-      digitalWrite(led, LOW);
-      automodeLdr = false;
-      Serial.println("Den da TAT");
-    }
-  }
+  // // ----------- LDR -----------
+  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/LED")
+  // {
+  //   if (stMessage == "LIGHT_ON")
+  //   {
+  //     digitalWrite(led, HIGH);
+  //     automodeLdr = false;
+  //     Serial.println("Den da BAT");
+  //   }
+  //   else if (stMessage == "LIGHT_OFF")
+  //   {
+  //     digitalWrite(led, LOW);
+  //     automodeLdr = false;
+  //     Serial.println("Den da TAT");
+  //   }
+  // }
 
-  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/automodeLdr")
-  {
-    automodeLdr = (stMessage == "ON");
-    Serial.println("Chuc nang tu dong LDR: " + String(automodeLdr ? "ON" : "OFF"));
-  }
+  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/automodeLdr")
+  // {
+  //   automodeLdr = (stMessage == "ON");
+  //   Serial.println("Chuc nang tu dong LDR: " + String(automodeLdr ? "ON" : "OFF"));
+  // }
 
-  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ThresholdLdr")
-  {
-    float newThreshold = stMessage.toFloat();
-    if (newThreshold >= 0 && newThreshold <= 1000)
-    {
-      nguongLdr = newThreshold;
-      Serial.println("Ngưỡng LDR mới: " + String(nguongLdr));
-    }
-  }
+  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ThresholdLdr")
+  // {
+  //   float newThreshold = stMessage.toFloat();
+  //   if (newThreshold >= 0 && newThreshold <= 1000)
+  //   {
+  //     nguongLdr = newThreshold;
+  //     Serial.println("Ngưỡng LDR mới: " + String(nguongLdr));
+  //   }
+  // }
 
   // ----------- HC-SR04 / bơm bể -----------
   if (String(topic) == "HeThongNongTraiThongMinh/HCSR04/Control/MOTOR")
@@ -446,7 +472,7 @@ void callback(char *topic, byte *message, unsigned int length)
       Serial.println("Ngưỡng độ ẩm đất mới: " + String(nguongDoamdat));
     }
   }
-  
+
   // ----------- Độ ẩm đất / bơm tưới -----------
   if (String(topic) == "HeThongNongTraiThongMinh/Doamdat/Control/MOTOR")
   {
@@ -735,7 +761,7 @@ void loop()
       }
     }
 
-    if (!isnan(ldr_value) && automodeLdr)
+    if (!isnan(ldr_value) && automodeLdr && !manualLed)
     {
       digitalWrite(led, ldr_value > nguongLdr ? HIGH : LOW);
       Serial.println("Den dang " + String(ldr_value > nguongLdr ? "ON" : "OFF"));

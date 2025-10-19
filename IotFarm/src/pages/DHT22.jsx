@@ -13,7 +13,7 @@ const DHT22 = () => {
   const [isListening, setIsListening] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
 
-  // 🗣️ Hàm phát giọng nói phản hồi
+  // Hàm phát giọng nói phản hồi
   const speak = (text) => {
     if (!window.speechSynthesis) return;
     const utter = new SpeechSynthesisUtterance(text);
@@ -26,7 +26,7 @@ const DHT22 = () => {
     window.speechSynthesis.speak(utter);
   };
 
-  // 🌡️ Lấy dữ liệu cảm biến
+  // Lấy dữ liệu cảm biến
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,7 +34,7 @@ const DHT22 = () => {
         const data = await res.json();
         setSensorData(Array.isArray(data) ? data[0] : data);
       } catch (err) {
-        console.error("❌ Lỗi fetch dữ liệu:", err);
+        console.error(" Lỗi fetch dữ liệu:", err);
       }
     };
     fetchData();
@@ -42,24 +42,24 @@ const DHT22 = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ⚙️ Tự động bật/tắt điều hòa
+  //  Tự động bật/tắt điều hòa
   useEffect(() => {
     if (!isAutoMode) return;
     const { nhietdo } = sensorData;
     if (nhietdo >= currentThreshold && !isACOn) {
       handleToggleAC(true);
-      const msg = `🌡️ Nhiệt độ ${nhietdo}°C ≥ ${currentThreshold}°C → bật điều hòa.`;
+      const msg = ` Nhiệt độ ${nhietdo}°C ≥ ${currentThreshold}°C → bật điều hòa.`;
       setVoiceMessage(msg);
-      speak(msg); // 🗣️ Phát giọng nói
+      speak(msg); //  Phát giọng nói
     } else if (nhietdo < currentThreshold && isACOn) {
       handleToggleAC(false);
-      const msg = `🌡️ Nhiệt độ ${nhietdo}°C < ${currentThreshold}°C → tắt điều hòa.`;
+      const msg = ` Nhiệt độ ${nhietdo}°C < ${currentThreshold}°C → tắt điều hòa.`;
       setVoiceMessage(msg);
-      speak(msg); // 🗣️ Phát giọng nói
+      speak(msg); //  Phát giọng nói
     }
   }, [sensorData, isAutoMode, currentThreshold]);
 
-  // 🧠 Bật/tắt điều hòa
+  // Bật/tắt điều hòa
   const handleToggleAC = () => {
     const action = isACOn ? "OFF" : "ON"; // nếu đang bật thì tắt, nếu đang tắt thì bật
 
@@ -87,7 +87,7 @@ const DHT22 = () => {
       });
   };
 
-  // 🔁 Chế độ tự động
+  //  Chế độ tự động
   const handleToggleAuto = () => {
     const newState = !isAutoMode;
     setIsAutoMode(newState);
@@ -98,7 +98,7 @@ const DHT22 = () => {
     speak(msg);
   };
 
-  // 🔢 Cập nhật ngưỡng
+  //  Cập nhật ngưỡng
   const handleUpdateThreshold = () => {
     if (threshold === "" || isNaN(threshold)) {
       alert(" Vui lòng nhập giá trị hợp lệ!");
@@ -129,7 +129,7 @@ const DHT22 = () => {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript.toLowerCase();
-      console.log("🎤 Lệnh giọng nói:", transcript);
+      console.log(" Lệnh giọng nói:", transcript);
       setIsListening(false);
 
       let msg = "";

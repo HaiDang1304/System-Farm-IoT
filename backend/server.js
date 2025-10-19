@@ -4,7 +4,7 @@ import mqtt from "mqtt";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
 
-dotenv.config(); // load .env
+dotenv.config();
 
 // ====== KHỞI TẠO FIREBASE TỪ ENV ======
 const serviceAccount = {
@@ -44,7 +44,7 @@ const options = {
 const client = mqtt.connect(options);
 
 client.on("connect", () => {
-  console.log("✅ Đã kết nối tới HiveMQ Cloud!");
+  console.log("Đã kết nối tới HiveMQ Cloud!");
   client.subscribe(process.env.MQTT_TOPIC, (err) => {
     if (!err) console.log(`📡 Subscribed topic: ${process.env.MQTT_TOPIC}`);
   });
@@ -53,7 +53,7 @@ client.on("connect", () => {
 client.on("message", async (topic, message) => {
   try {
     const payload = JSON.parse(message.toString());
-    console.log("📥 Nhận dữ liệu:", payload);
+    console.log(" Nhận dữ liệu:", payload);
 
     await db.collection("sensorData").add({
       ...payload,
@@ -61,9 +61,9 @@ client.on("message", async (topic, message) => {
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log("✅ Lưu Firebase thành công!");
+    console.log("Lưu Firebase thành công!");
   } catch (err) {
-    console.error("❌ Lỗi khi lưu:", err);
+    console.error(" Lỗi khi lưu:", err);
   }
 });
 
@@ -133,11 +133,11 @@ app.post("/control", (req, res) => {
 
   client.publish(topic, message, { qos: 1 }, (err) => {
     if (err) {
-      console.error("❌ Lỗi publish:", err);
+      console.error(" Lỗi publish:", err);
       return res.status(500).json({ error: "Không gửi được lệnh MQTT" });
     }
 
-    console.log(`📤 Gửi MQTT: ${topic} -> ${message}`);
+    console.log(` Gửi MQTT: ${topic} -> ${message}`);
     res.json({ success: true, topic, sent: message });
   });
 });
@@ -145,5 +145,5 @@ app.post("/control", (req, res) => {
 // ====== KHỞI CHẠY SERVER ======
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
+  console.log(` Server đang chạy tại http://localhost:${PORT}`);
 });
