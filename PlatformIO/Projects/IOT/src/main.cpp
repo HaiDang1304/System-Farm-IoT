@@ -68,7 +68,8 @@ bool automodeMua = true;     // mái che theo mưa
 bool manualAC = false;       // false = tự động, true = thủ công
 bool acState = false;        // lưu trạng thái hiện tại
 
-bool manualLed = false; // true khi LED đang được điều khiển thủ công
+bool manualLed = false;     // true khi LED đang được điều khiển thủ công
+bool manualMotorBe = false; // true = đang điều khiển thủ công
 
 float nguongDht = 25.0;    // °C
 int nguongMq2 = 2500;      // raw 0..4095
@@ -445,16 +446,45 @@ void callback(char *topic, byte *message, unsigned int length)
   // ----------- HC-SR04 / bơm bể -----------
   if (String(topic) == "HeThongNongTraiThongMinh/HCSR04/Control/MOTOR")
   {
-    controlStepperMotorBe(stMessage == "MOTOR_ON");
+    StaticJsonDocument<128> doc;
+    DeserializationError err = deserializeJson(doc, stMessage);
+    if (err)
+    {
+      Serial.println("Loi parse JSON MOTOR: " + String(err.c_str()));
+      return;
+    }
+
+    String device = doc["device"] | "";
+    String action = doc["action"] | "";
+
+    if (device.equalsIgnoreCase("PumpTank"))
+    {
+      manualMotorBe = true; // bật chế độ thủ công
+      if (action.equalsIgnoreCase("ON"))
+      {
+        controlStepperMotorBe(true);
+        Serial.println("Motor bể BẬT (thủ công)");
+      }
+      else if (action.equalsIgnoreCase("OFF"))
+      {
+        controlStepperMotorBe(false);
+        Serial.println("Motor bể TẮT (thủ công)");
+      }
+    }
   }
+
   if (String(topic) == "HeThongNongTraiThongMinh/HCSR04/Control/automodeHcsr04")
   {
     automodeHcsr04 = (stMessage == "ON");
     Serial.println("Chuc nang tu dong HCSR04: " + String(automodeHcsr04 ? "ON" : "OFF"));
+    if (automodeHcsr04)
+      manualMotorBe = false; // auto mode → reset manual
   }
+
   if (String(topic) == "HeThongNongTraiThongMinh/HCSR04/Control/ThresholdHcsr04")
   {
     nguongHcsr04 = stMessage.toFloat();
+    Serial.println("Ngưỡng motor bể mới: " + String(nguongHcsr04));
   }
 
   // ----------- Độ ẩm đất / bơm tưới -----------
@@ -767,7 +797,7 @@ void loop()
       Serial.println("Den dang " + String(ldr_value > nguongLdr ? "ON" : "OFF"));
     }
 
-    if (!isnan(khoangcach) && automodeHcsr04)
+    if (!isnan(khoangcach) && automodeHcsr04 && !manualMotorBe)
     {
       if (khoangcach > nguongHcsr04)
       {

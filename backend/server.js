@@ -46,7 +46,7 @@ const client = mqtt.connect(options);
 client.on("connect", () => {
   console.log("Đã kết nối tới HiveMQ Cloud!");
   client.subscribe(process.env.MQTT_TOPIC, (err) => {
-    if (!err) console.log(`📡 Subscribed topic: ${process.env.MQTT_TOPIC}`);
+    if (!err) console.log(` Subscribed topic: ${process.env.MQTT_TOPIC}`);
   });
 });
 
@@ -141,6 +141,8 @@ app.post("/control", (req, res) => {
     res.json({ success: true, topic, sent: message });
   });
 });
+
+
 
 // ====== KHỞI CHẠY SERVER ======
 const PORT = process.env.PORT || 3000;

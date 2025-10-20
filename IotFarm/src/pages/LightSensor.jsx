@@ -55,7 +55,7 @@ const LightSensor = () => {
       await fetch(CONTROL_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ device: "LED", action: state ? "ON" : "OFF" }),
+        body: JSON.stringify({ device: "Led", action: state ? "ON" : "OFF" }),
       });
       speak(`Đèn đã ${state ? "bật" : "tắt"}`);
     } catch (err) {
@@ -133,7 +133,7 @@ const LightSensor = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4">
       <h2 className="text-3xl font-bold text-blue-500 text-center">
         Giám Sát Điều Khiển Ánh Sáng
       </h2>

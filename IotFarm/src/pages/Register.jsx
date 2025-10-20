@@ -23,13 +23,13 @@ const Register = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setMessage("❌ Mật khẩu không khớp.");
+      setMessage(" Mật khẩu không khớp.");
       return;
     }
     const passwordRegex = /^[A-Za-z0-9]{6,}$/;
     if (!passwordRegex.test(password)) {
       setMessage(
-        "❌ Mật khẩu phải có ít nhất 6 ký tự và chỉ bao gồm chữ cái và số."
+        " Mật khẩu phải có ít nhất 6 ký tự và chỉ bao gồm chữ cái và số."
       );
       return;
     }
