@@ -533,12 +533,17 @@ void callback(char *topic, byte *message, unsigned int length)
   if (String(topic) == "HeThongNongTraiThongMinh/Mua/Control/Maiche")
   {
     automodeMua = false;
-    if (stMessage == "ON")
+
+    StaticJsonDocument<200> doc;
+    deserializeJson(doc, stMessage);
+    String action = doc["action"];
+
+    if (action == "ON")
     {
       dieuKhienMaiChe(1);
       Serial.println("Mai che da BAT");
     }
-    else if (stMessage == "OFF")
+    else if (action == "OFF")
     {
       dieuKhienMaiChe(0);
       Serial.println("Mai che da TAT");

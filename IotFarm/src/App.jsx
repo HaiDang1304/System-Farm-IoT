@@ -15,6 +15,7 @@ import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import LightSensor from "./pages/LightSensor";
 import WaterSensor from "./pages/WaterSensor";
+import RainSensor from "./pages/RainSensor";
 
 function App() {
   const [currentUser, setCurrentUser] = React.useState(null);
@@ -57,8 +58,9 @@ function App() {
           <Route path="soilmoisture" element={<SoilMoistureSensor />} />
           <Route path="lightsensor" element={<LightSensor/>} />
           <Route path= "watersensor" element={<WaterSensor/>} />
+          <Route path="rainsensor" element={<RainSensor/>} />
 
-          
+
           <Route path="sensors" element={<div>Trang quản lý cảm biến</div>} />
           <Route path="settings" element={<div>Trang cài đặt</div>} />
           {/* thêm các trang khác ở đây */}
