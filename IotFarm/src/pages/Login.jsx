@@ -34,7 +34,7 @@ const Login = () => {
           title: "Email chưa xác minh",
           text: "Vui lòng kiểm tra hộp thư và xác minh email trước khi đăng nhập.",
         });
-       await auth.signOut(); 
+        await auth.signOut();
         return;
       }
 
@@ -59,18 +59,27 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+      // --- Xử lý URL ảnh ĐÚNG CÁCH ---
       let photoURL = user.photoURL;
-      if (photoURL && photoURL.includes("/a/")) {
-        photoURL = photoURL.replace("/a/", "/a-/");
+      if (photoURL) {
+        photoURL = photoURL.replace("/a-/", "/a/");
+        // Thêm size parameter nếu chưa có
+        if (!photoURL.includes("=s")) {
+          photoURL = photoURL.split("=")[0] + "=s400-c";
+        }
+      } else {
+        photoURL = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
       }
 
+      // --- Lưu hoặc cập nhật Firestore ---
       await setDoc(
         doc(db, "users", user.uid),
         {
           uid: user.uid,
-          name: user.displayName,
+          name: user.displayName || "Người dùng mới",
           email: user.email,
-          photo: photoURL,
+          photo: photoURL, 
           type: "google",
           role: "user",
           lastLogin: new Date().toISOString(),

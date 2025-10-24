@@ -4,6 +4,8 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEm
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyD4gCLnG_S0zYlioxIir70ETjtSou7qXug",
   authDomain: "iot-farm-9f505.firebaseapp.com",
@@ -18,8 +20,12 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+provider.addScope("profile");
+provider.addScope("email");
 
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
+
+
 
 export { auth, provider, signInWithPopup, signOut, analytics, db, doc, setDoc, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword};

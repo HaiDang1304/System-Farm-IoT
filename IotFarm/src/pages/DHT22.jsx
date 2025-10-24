@@ -218,7 +218,7 @@ const DHT22 = () => {
                 : "bg-blue-500 hover:bg-blue-600"
             }`}
           >
-            🎙️ {isListening ? "Đang nghe..." : "Điều khiển bằng giọng nói"}
+             {isListening ? "Đang nghe..." : "Điều khiển bằng giọng nói"}
           </button>
         </div>
 

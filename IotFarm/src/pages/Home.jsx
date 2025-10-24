@@ -374,6 +374,7 @@ const Home = () => {
           DỰ BÁO THỜI TIẾT HÔM NAY
         </h2>
         <WeatherWidget />
+        
       </div>
     </div>
   );

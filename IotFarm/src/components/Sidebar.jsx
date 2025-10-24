@@ -1,19 +1,84 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 const Sidebar = ({ setIsAuth }) => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  // Hàm xử lý URL ảnh Google
+  const fixGooglePhotoUrl = (photoUrl) => {
+    if (!photoUrl) {
+      return "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+    }
 
-  const handleLogout = () => {
-    signOut(auth).catch(() => {});
-    localStorage.removeItem("auth");
+    // Loại bỏ khoảng trắng
+    let cleanUrl = photoUrl.trim().replace(/\s+/g, "");
 
-    navigate("/login");
+    // Kiểm tra nếu là URL Google Photos
+    if (cleanUrl.includes("googleusercontent.com")) {
+      // Loại bỏ phần /a-/ và thay bằng /a/
+      cleanUrl = cleanUrl.replace("/a-/", "/a/");
+
+      // Đảm bảo có size parameter (s96-c hoặc s400-c)
+      if (!cleanUrl.includes("=s")) {
+        cleanUrl = cleanUrl.split("=")[0] + "=s400-c";
+      }
+    }
+
+    return cleanUrl;
   };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(userRef);
+
+        let userData;
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          userData = {
+            name: data.name || data.email?.split("@")[0] || "Người dùng mới",
+            photo: fixGooglePhotoUrl(data.photo || currentUser.photoURL),
+          };
+        } else {
+          userData = {
+            name:
+              currentUser.displayName ||
+              currentUser.email?.split("@")[0] ||
+              "Người dùng mới",
+            email: currentUser.email,
+            photo: fixGooglePhotoUrl(currentUser.photoURL),
+          };
+        }
+
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        console.log("User photo URL:", userData.photo);
+      } else {
+        setUser(null);
+        localStorage.removeItem("user");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem("auth");
+      localStorage.removeItem("user");
+      setUser(null);
+      navigate("/login");
+    } catch (error) {
+      console.error("Đăng xuất thất bại:", error);
+    }
+  };
+
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col fixed h-screen">
       <div className="p-6 text-lg font-medium text-emerald-400 border-b border-gray-700 text-center">
@@ -33,9 +98,10 @@ const Sidebar = ({ setIsAuth }) => {
             >
               <path d="M341.8 72.6C329.5 61.2 310.5 61.2 298.3 72.6L74.3 280.6C64.7 289.6 61.5 303.5 66.3 315.7C71.1 327.9 82.8 336 96 336L112 336L112 512C112 547.3 140.7 576 176 576L464 576C499.3 576 528 547.3 528 512L528 336L544 336C557.2 336 569 327.9 573.8 315.7C578.6 303.5 575.4 289.5 565.8 280.6L341.8 72.6zM304 384L336 384C362.5 384 384 405.5 384 432L384 528L256 528L256 432C256 405.5 277.5 384 304 384z" />
             </svg>
-            <p className="text-md font-medium "> Trang chủ</p>
+            <p className="text-md font-medium">Trang chủ</p>
           </div>
         </button>
+
         <button
           onClick={() => navigate("/sensors")}
           className="w-full text-left px-4 py-2 rounded hover:bg-gray-700"
@@ -51,6 +117,7 @@ const Sidebar = ({ setIsAuth }) => {
             <p className="text-md font-medium">Quản lý cảm biến</p>
           </div>
         </button>
+
         <button
           onClick={() => navigate("/settings")}
           className="w-full text-left px-4 py-2 rounded hover:bg-gray-700"
@@ -75,7 +142,11 @@ const Sidebar = ({ setIsAuth }) => {
               <img
                 src={user.photo}
                 alt={user.name}
-                className="w-10 h-10 rounded-full border-2 border-white"
+                onError={(e) => {
+                  e.target.src =
+                    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                }}
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />
               <p className="font-semibold">{user.name}</p>
             </div>
