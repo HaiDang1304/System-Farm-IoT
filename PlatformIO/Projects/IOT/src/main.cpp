@@ -329,12 +329,12 @@ void callback(char *topic, byte *message, unsigned int length)
       if (action.equalsIgnoreCase("ON"))
       {
         digitalWrite(led, HIGH);
-        Serial.println("💡 Đèn LED đã BẬT (thủ công)");
+        Serial.println(" Đèn LED đã BẬT (thủ công)");
       }
       else if (action.equalsIgnoreCase("OFF"))
       {
         digitalWrite(led, LOW);
-        Serial.println("💡 Đèn LED đã TẮT (thủ công)");
+        Serial.println(" Đèn LED đã TẮT (thủ công)");
       }
     }
   }
@@ -383,15 +383,26 @@ void callback(char *topic, byte *message, unsigned int length)
   {
     Serial.println(" Nhan lenh BUZZER: " + stMessage);
 
-    if (stMessage == "BUZZER_ON")
+    StaticJsonDocument<128> doc;
+    DeserializationError error = deserializeJson(doc, stMessage);
+
+    if (error)
     {
-      tone(coi, 1000); // Chỉ dùng tone() thôi, không cần digitalWrite
+      Serial.println("Loi parse JSON BUZZER: " + String(error.c_str()));
+      return;
+    }
+
+    String action = doc["action"] | "";
+
+    if (action.equalsIgnoreCase("ON"))
+    {
+      tone(coi, 1000);
       Serial.println(" Coi da BAT - 1000Hz");
     }
-    else if (stMessage == "BUZZER_OFF")
+    else if (action.equalsIgnoreCase("OFF"))
     {
       noTone(coi);
-      digitalWrite(coi, LOW); // Đảm bảo pin về LOW
+      digitalWrite(coi, LOW);
       Serial.println(" Coi da TAT");
     }
   }
@@ -399,18 +410,51 @@ void callback(char *topic, byte *message, unsigned int length)
   if (String(topic) == "HeThongNongTraiThongMinh/KhiGas/Control/automodeMq2")
   {
     Serial.println(" Nhan lenh automodeMq2: " + stMessage);
-    automodeMq2 = (stMessage == "ON");
-    Serial.println(" Che do tu dong MQ2: " + String(automodeMq2 ? "BAT" : "TAT"));
+
+    StaticJsonDocument<128> doc;
+    DeserializationError error = deserializeJson(doc, stMessage);
+
+    if (!error)
+    {
+      String action = doc["action"] | "";
+      automodeMq2 = action.equalsIgnoreCase("ON");
+      Serial.println(" Che do tu dong MQ2: " + String(automodeMq2 ? "BAT" : "TAT"));
+    }
+    else
+    {
+      // Fallback: nếu là string đơn giản "ON"/"OFF"
+      automodeMq2 = (stMessage == "ON");
+      Serial.println(" Che do tu dong MQ2: " + String(automodeMq2 ? "BAT" : "TAT"));
+    }
   }
 
   if (String(topic) == "HeThongNongTraiThongMinh/KhiGas/Control/ThresholdMq2")
   {
     Serial.println(" Nhan lenh ThresholdMq2: " + stMessage);
-    int newThreshold = stMessage.toInt();
+
+    StaticJsonDocument<128> doc;
+    DeserializationError error = deserializeJson(doc, stMessage);
+
+    int newThreshold;
+    if (!error && doc.containsKey("action"))
+    {
+      newThreshold = doc["action"].as<int>();
+    }
+    else
+    {
+      newThreshold = stMessage.toInt();
+    }
+
     if (newThreshold >= 0 && newThreshold <= 4095)
     {
       nguongMq2 = newThreshold;
       Serial.println(" Nguong MQ2 moi: " + String(nguongMq2));
+
+      StaticJsonDocument<2048> publicDoc;
+      publicDoc ["khigas"] = analogRead(khigas);
+      publicDoc ["nguongbatcoi"] = nguongMq2;
+      publicDoc ["automodeMq2"] = automodeMq2;
+
     }
     else
     {

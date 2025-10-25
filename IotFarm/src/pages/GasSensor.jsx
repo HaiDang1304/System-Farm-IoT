@@ -7,11 +7,11 @@ const CONTROL_URL = "http://localhost:3000/control";
 const GasSensor = () => {
   const [sensorData, setSensorData] = useState({
     khigas: 0,
-    automodeMq2: true,
     nguongbatcoi: 2500,
   });
   const [threshold, setThreshold] = useState("");
   const [isBuzzerOn, setIsBuzzerOn] = useState(false);
+  const [isAutoMode, setIsAutoMode] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
 
@@ -37,10 +37,6 @@ const GasSensor = () => {
         const deviceData = Array.isArray(data) ? data[0] : data;
         setSensorData({
           khigas: deviceData.khigas || 0,
-          automodeMq2:
-            deviceData.automodeMq2 !== undefined
-              ? deviceData.automodeMq2
-              : true,
           nguongbatcoi: deviceData.nguongbatcoi || 2500,
         });
       } catch (err) {
@@ -54,21 +50,21 @@ const GasSensor = () => {
 
   // Tự động phát cảnh báo khi vượt ngưỡng
   useEffect(() => {
-    if (!sensorData.automodeMq2) return; // Chỉ khi auto bật mới check
+    if (!isAutoMode) return;
     const { khigas, nguongbatcoi } = sensorData;
 
     if (khigas >= nguongbatcoi && !isBuzzerOn) {
+      handleToggleBuzzer(true);
       const msg = `Cảnh báo! Nồng độ khí gas ${khigas} ppm vượt ngưỡng ${nguongbatcoi} ppm. Còi đã được bật tự động.`;
       setVoiceMessage(msg);
       speak(msg);
-      setIsBuzzerOn(true);
     } else if (khigas < nguongbatcoi && isBuzzerOn) {
+      handleToggleBuzzer(false);
       const msg = `Nồng độ khí gas ${khigas} ppm đã trở về an toàn dưới ${nguongbatcoi} ppm. Còi đã được tắt.`;
       setVoiceMessage(msg);
       speak(msg);
-      setIsBuzzerOn(false);
     }
-  }, [sensorData.khigas, sensorData.automodeMq2]);
+  }, [sensorData.khigas, isAutoMode, sensorData.nguongbatcoi]);
 
   // Bật/tắt còi báo động
   const handleToggleBuzzer = (forcedState) => {
@@ -82,13 +78,12 @@ const GasSensor = () => {
         : "ON";
 
     fetch(`${CONTROL_URL}`, {
-      // Sửa: Không có /gas
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        device: "Buzzer", // Sửa: Dùng key từ topicMap
+        device: "Buzzer",
         action: action,
       }),
     })
@@ -111,19 +106,18 @@ const GasSensor = () => {
 
   // Chế độ tự động
   const handleToggleAuto = () => {
-    const newState = !sensorData.automodeMq2;
+    const newState = !isAutoMode;
     const action = newState ? "ON" : "OFF";
 
     console.log("Gửi lệnh tự động:", action);
 
     fetch(`${CONTROL_URL}`, {
-      // Sửa: Không có /gas
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        device: "AutoMq2", // Sửa: Dùng key từ topicMap
+        device: "AutoMq2",
         action: action,
       }),
     })
@@ -133,7 +127,7 @@ const GasSensor = () => {
       })
       .then(() => {
         console.log("Lệnh tự động đã gửi thành công:", action);
-        setSensorData((prev) => ({ ...prev, automodeMq2: newState }));
+        setIsAutoMode(newState);
         const msg = newState
           ? "Đã bật chế độ tự động phát hiện khí gas."
           : "Đã tắt chế độ tự động phát hiện khí gas.";
@@ -160,14 +154,13 @@ const GasSensor = () => {
     }
 
     fetch(`${CONTROL_URL}`, {
-      // Sửa: Không có /gas
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        device: "ThresholdMq2", // Sửa: Dùng key từ topicMap
-        action: threshold, // Sửa: action là giá trị ngưỡng
+        device: "ThresholdMq2",
+        action: threshold,
       }),
     })
       .then((res) => {
@@ -190,7 +183,7 @@ const GasSensor = () => {
 
   const handleVoiceControl = () => {
     if (!("webkitSpeechRecognition" in window)) {
-      alert("Trình duyệt không hỗ trợ nhận diện giọng nói!");
+      alert("Trình duyệt không hỗ trợ giọng nói!");
       return;
     }
 
@@ -210,27 +203,27 @@ const GasSensor = () => {
       setIsListening(false);
 
       let msg = "";
-      if (transcript.includes("bật còi") || transcript.includes("bật cồi")) {
+
+      if (transcript.includes("bật còi")) {
         handleToggleBuzzer(true);
-        msg = "Đã bật còi báo động theo lệnh giọng nói.";
-      } else if (
-        transcript.includes("tắt còi") ||
-        transcript.includes("tắt cồi")
-      ) {
+        msg = "Đã bật còi theo lệnh giọng nói.";
+      } else if (transcript.includes("tắt còi")) {
         handleToggleBuzzer(false);
-        msg = "Đã tắt còi báo động theo lệnh giọng nói.";
+        msg = "Đã tắt còi theo lệnh giọng nói.";
       } else if (transcript.includes("bật tự động")) {
-        if (!sensorData.automodeMq2) {
-          handleToggleAuto();
-        }
-        msg = "Đã bật chế độ tự động phát hiện khí gas.";
+        setIsAutoMode(true);
+        msg = "Đã bật chế độ tự động.";
       } else if (transcript.includes("tắt tự động")) {
-        if (sensorData.automodeMq2) {
-          handleToggleAuto();
-        }
-        msg = "Đã tắt chế độ tự động phát hiện khí gas.";
+        setIsAutoMode(false);
+        msg = "Đã tắt chế độ tự động.";
+      } else if (
+        transcript.includes("mức khí gas") ||
+        transcript.includes("giá trị khí gas") ||
+        transcript.includes("khí gas bao nhiêu")
+      ) {
+        msg = `Mức khí gas hiện tại là ${sensorData.khigas}.`;
       } else {
-        msg = "Không nhận diện được lệnh. Vui lòng thử lại!";
+        msg = "Không nhận diện được lệnh, vui lòng thử lại!";
       }
 
       setVoiceMessage(msg);
@@ -352,7 +345,7 @@ const GasSensor = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={sensorData.automodeMq2}
+                checked={isAutoMode}
                 onChange={handleToggleAuto}
                 className="sr-only peer"
               />
@@ -414,13 +407,13 @@ const GasSensor = () => {
           </div>
           <button
             onClick={() => handleToggleBuzzer()}
-            disabled={sensorData.automodeMq2} // disable nếu auto đang bật
+            disabled={isAutoMode}
             className={`px-6 py-3 rounded-lg text-white transition duration-200 font-semibold ${
               isBuzzerOn
-                ? sensorData.automodeMq2
+                ? isAutoMode
                   ? "bg-gray-300 cursor-not-allowed"
                   : "bg-gray-500 hover:bg-gray-600"
-                : sensorData.automodeMq2
+                : isAutoMode
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-red-500 hover:bg-red-600"
             }`}
@@ -497,7 +490,7 @@ const GasSensor = () => {
           {voiceMessage}
         </div>
       )}
-      <ChartGas/>
+      <ChartGas />
     </div>
   );
 };
