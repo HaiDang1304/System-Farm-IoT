@@ -451,10 +451,9 @@ void callback(char *topic, byte *message, unsigned int length)
       Serial.println(" Nguong MQ2 moi: " + String(nguongMq2));
 
       StaticJsonDocument<2048> publicDoc;
-      publicDoc ["khigas"] = analogRead(khigas);
-      publicDoc ["nguongbatcoi"] = nguongMq2;
-      publicDoc ["automodeMq2"] = automodeMq2;
-
+      publicDoc["khigas"] = analogRead(khigas);
+      publicDoc["nguongbatcoi"] = nguongMq2;
+      publicDoc["automodeMq2"] = automodeMq2;
     }
     else
     {
@@ -802,7 +801,7 @@ void loop()
   checkingSchedules = false;
 
   static unsigned long lastNTP = 0;
-  if (millis() - lastNTP > 2000)
+  if (millis() - lastNTP > 30000)
   {
     lastNTP = millis();
 

@@ -129,7 +129,17 @@ app.post("/control", (req, res) => {
     return res.status(400).json({ error: `Không tìm thấy topic cho thiết bị: ${device}` });
   }
 
-  const message = JSON.stringify({ device, action });
+  const thresholdDevices = new Set([
+    "ThresholdDht",
+    "ThresholdMq2",
+    "ThresholdLdr",
+    "ThresholdHcsr04",
+    "ThresholdDoamdat"
+  ]);
+
+  const message = thresholdDevices.has(device)
+    ? String(action)
+    : JSON.stringify({ device, action });
 
   client.publish(topic, message, { qos: 1 }, (err) => {
     if (err) {

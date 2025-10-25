@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "mobile-app",
+    "slug": "mobile-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:3000",
+      "refreshInterval": 5000,
+      "googleAuth": {
+        "expoClientId": "GOOGLE_EXPO_CLIENT_ID.apps.googleusercontent.com",
+        "androidClientId": "GOOGLE_ANDROID_CLIENT_ID.apps.googleusercontent.com",
+        "iosClientId": "GOOGLE_IOS_CLIENT_ID.apps.googleusercontent.com",
+        "webClientId": "GOOGLE_WEB_CLIENT_ID.apps.googleusercontent.com"
+      }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
+}
