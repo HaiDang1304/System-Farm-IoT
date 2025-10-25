@@ -381,32 +381,40 @@ void callback(char *topic, byte *message, unsigned int length)
   // ----------- Gas / buzzer -----------
   if (String(topic) == "HeThongNongTraiThongMinh/KhiGas/Control/BUZZER")
   {
+    Serial.println(" Nhan lenh BUZZER: " + stMessage);
+
     if (stMessage == "BUZZER_ON")
     {
-      digitalWrite(coi, HIGH);
-      tone(coi, 1000); // Phat tin hieu am thanh 1kHz
-      Serial.println("Coi da BAT");
+      tone(coi, 1000); // Chỉ dùng tone() thôi, không cần digitalWrite
+      Serial.println(" Coi da BAT - 1000Hz");
     }
-    if (stMessage == "BUZZER_OFF")
+    else if (stMessage == "BUZZER_OFF")
     {
-      digitalWrite(coi, LOW);
-      noTone(coi); // Ngung phat tin hieu am thanh
-      Serial.println("Coi da TAT");
+      noTone(coi);
+      digitalWrite(coi, LOW); // Đảm bảo pin về LOW
+      Serial.println(" Coi da TAT");
     }
   }
 
   if (String(topic) == "HeThongNongTraiThongMinh/KhiGas/Control/automodeMq2")
   {
+    Serial.println(" Nhan lenh automodeMq2: " + stMessage);
     automodeMq2 = (stMessage == "ON");
-    Serial.println("Chuc nang tu dong MQ2: " + String(automodeMq2 ? "ON" : "OFF"));
+    Serial.println(" Che do tu dong MQ2: " + String(automodeMq2 ? "BAT" : "TAT"));
   }
+
   if (String(topic) == "HeThongNongTraiThongMinh/KhiGas/Control/ThresholdMq2")
   {
-    float newThreshold = stMessage.toFloat();
-    if (newThreshold >= 0 || newThreshold <= 4095)
+    Serial.println(" Nhan lenh ThresholdMq2: " + stMessage);
+    int newThreshold = stMessage.toInt();
+    if (newThreshold >= 0 && newThreshold <= 4095)
     {
       nguongMq2 = newThreshold;
-      Serial.println("Nguong MQ2 da duoc cap nhat: " + String(nguongMq2));
+      Serial.println(" Nguong MQ2 moi: " + String(nguongMq2));
+    }
+    else
+    {
+      Serial.println(" Nguong khong hop le: " + String(newThreshold));
     }
   }
 
@@ -782,18 +790,29 @@ void loop()
       acState = shouldAC;
     }
 
+    // Tự động điều khiển còi theo nồng độ gas
     if (!isnan(mq2_value) && automodeMq2)
     {
-      if (mq2_value > nguongMq2)
+      static bool lastBuzzerState = false; // Lưu trạng thái trước đó
+
+      if (mq2_value > nguongMq2 && !lastBuzzerState)
       {
-        digitalWrite(coi, HIGH);
-        Serial.println("Coi bat do khi gas vuot nguong: ") + String(mq2_value);
+        tone(coi, 1000);
+        lastBuzzerState = true;
+        Serial.println(" Tu dong BAT coi - Gas: " + String(mq2_value) + " > " + String(nguongMq2));
       }
-      else
+      else if (mq2_value <= nguongMq2 && lastBuzzerState)
       {
+        noTone(coi);
         digitalWrite(coi, LOW);
-        Serial.println("Coi tat do khi gas duoi nguong: ") + String(mq2_value);
+        lastBuzzerState = false;
+        Serial.println(" Tu dong TAT coi - Gas: " + String(mq2_value) + " <= " + String(nguongMq2));
       }
+    }
+    else if (!automodeMq2)
+    {
+      // Khi tắt chế độ tự động, không làm gì (giữ nguyên trạng thái manual)
+      // Serial.println("⏸️ Che do tu dong da tat");
     }
 
     if (!isnan(ldr_value) && automodeLdr && !manualLed)

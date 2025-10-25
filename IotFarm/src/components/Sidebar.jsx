@@ -103,7 +103,7 @@ const Sidebar = ({ setIsAuth }) => {
         </button>
 
         <button
-          onClick={() => navigate("/sensors")}
+          onClick={() => navigate("/dasboard")}
           className="w-full text-left px-4 py-2 rounded hover:bg-gray-700"
         >
           <div className="flex gap-2 items-center">

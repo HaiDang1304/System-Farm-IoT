@@ -321,7 +321,7 @@ const Home = () => {
         </Link>
 
         {/* Cảm biến khí gas */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition">
+        <Link to="/gassensor" className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition">
           <div className="flex items-center gap-3 text-pink-600 mb-4">
             <Activity className="w-6 h-6" />
             <h3 className="text-lg font-bold">Cảm biến khí gas</h3>
@@ -366,7 +366,7 @@ const Home = () => {
             </svg>
             Cập nhật: <span className="text-gray-500">{timeString}</span>
           </p>
-        </div>
+        </Link>
       </div>
 
       <div className="mt-12">
