@@ -65,13 +65,37 @@ const LightSensor = () => {
   };
 
   // Cập nhật ngưỡng ánh sáng
-  const handleUpdateThreshold = () => {
+  const handleUpdateThreshold = async () => {
     const value = parseInt(thresholdInput);
-    if (!isNaN(value)) {
+
+    if (isNaN(value) || value < 0 || value > 4095) {
+      alert(" Vui lòng nhập số hợp lệ (0-4095)!");
+      return;
+    }
+
+    try {
+      const res = await fetch(CONTROL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          device: "ThresholdLdr",
+          action: value,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server trả lỗi ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(" Đã cập nhật ngưỡng ánh sáng:", data);
+
       setNguongLdr(value);
       speak(`Ngưỡng ánh sáng đã được cập nhật thành ${value} lux`);
       setThresholdInput("");
-    } else alert("Vui lòng nhập số hợp lệ!");
+    } catch (err) {
+      console.error("Lỗi khi cập nhật ngưỡng:", err);
+    }
   };
 
   // Giọng nói điều khiển

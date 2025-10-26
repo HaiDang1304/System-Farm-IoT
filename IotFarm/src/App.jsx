@@ -18,6 +18,7 @@ import WaterSensor from "./pages/WaterSensor";
 import RainSensor from "./pages/RainSensor";
 import GasSensor from "./pages/GasSensor";
 import Dashboard from "./pages/Dashboard";
+import Setting from "./pages/Setting";
 
 function App() {
   const [currentUser, setCurrentUser] = React.useState(null);
@@ -64,8 +65,8 @@ function App() {
           <Route path="gassensor" element= {<GasSensor/>}/>
 
 
-          <Route path="dasboard" element={<Dashboard/>} />
-          <Route path="settings" element={<div>Trang cài đặt</div>} />
+          <Route path="dasboard" element={<Dashboard/> } />
+          <Route path="settings" element={<Setting/> } />
           {/* thêm các trang khác ở đây */}
         </Route>
 

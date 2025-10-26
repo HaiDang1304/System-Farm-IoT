@@ -99,16 +99,42 @@ const DHT22 = () => {
   };
 
   //  Cập nhật ngưỡng
-  const handleUpdateThreshold = () => {
+  const handleUpdateThreshold = async () => {
     if (threshold === "" || isNaN(threshold)) {
       alert(" Vui lòng nhập giá trị hợp lệ!");
       return;
     }
-    setCurrentThreshold(parseFloat(threshold));
-    const msg = `Đã cập nhật ngưỡng điều hòa: ${threshold}°C`;
-    setVoiceMessage(msg);
-    speak(msg);
-    setThreshold("");
+
+    const newThreshold = parseFloat(threshold);
+
+    try {
+      const res = await fetch("http://localhost:3000/control", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device: "ThresholdDht", 
+          action: newThreshold, 
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server trả lỗi ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(" Đã cập nhật ngưỡng:", data);
+
+      // Cập nhật state frontend
+      setCurrentThreshold(newThreshold);
+      const msg = ` Đã cập nhật ngưỡng điều hòa: ${newThreshold}°C`;
+      setVoiceMessage(msg);
+      speak(msg);
+      setThreshold("");
+    } catch (err) {
+      console.error(" Lỗi cập nhật ngưỡng:", err);
+    }
   };
 
   const handleVoiceControl = () => {
@@ -218,7 +244,7 @@ const DHT22 = () => {
                 : "bg-blue-500 hover:bg-blue-600"
             }`}
           >
-             {isListening ? "Đang nghe..." : "Điều khiển bằng giọng nói"}
+            {isListening ? "Đang nghe..." : "Điều khiển bằng giọng nói"}
           </button>
         </div>
 
@@ -238,11 +264,11 @@ const DHT22 = () => {
           </div>
           <button
             onClick={() => handleToggleAC()}
-            disabled={isAutoMode} 
+            disabled={isAutoMode}
             className={`px-6 py-2 rounded-lg text-white transition duration-200 ${
               isACOn
                 ? isAutoMode
-                  ? "bg-gray-300 cursor-not-allowed" 
+                  ? "bg-gray-300 cursor-not-allowed"
                   : "bg-gray-400 hover:bg-gray-500"
                 : isAutoMode
                 ? "bg-gray-300 cursor-not-allowed"

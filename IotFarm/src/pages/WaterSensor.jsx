@@ -35,7 +35,10 @@ const WaterSensor = () => {
       await fetch(CONTROL_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ device: "PumpTank", action: state ? "ON" : "OFF" }),
+        body: JSON.stringify({
+          device: "PumpTank",
+          action: state ? "ON" : "OFF",
+        }),
       });
       speak(`Motor đã ${state ? "bật" : "tắt"}`);
     } catch (error) {
@@ -45,14 +48,38 @@ const WaterSensor = () => {
   };
 
   // ======== Cập nhật ngưỡng ========
-  const handleThresholdUpdate = () => {
+  const handleThresholdUpdate = async () => {
     const value = parseInt(thresholdInput);
-    if (!isNaN(value)) {
+
+   
+    if (isNaN(value) || value < 0 || value > 400) {
+      alert(" Vui lòng nhập giá trị hợp lệ (0-400 cm)!");
+      return;
+    }
+
+    try {
+      const res = await fetch(CONTROL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          device: "ThresholdHcsr04", 
+          action: value, 
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server trả lỗi ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("Đã cập nhật ngưỡng mực nước:", data);
+
       setNguongMotor(value);
       speak(`Ngưỡng motor đã được đặt thành ${value} cm`);
       setThresholdInput("");
-    } else {
-      alert("Vui lòng nhập một số hợp lệ");
+    } catch (error) {
+      console.error("Lỗi cập nhật ngưỡng:", error);
+    
     }
   };
 
@@ -75,17 +102,20 @@ const WaterSensor = () => {
   // ======== Auto Mode theo ngưỡng ========
   useEffect(() => {
     if (autoMode) {
-      if (sensorData.khoangcach >= nguongMotor && !motorState) toggleMotor(true);
+      if (sensorData.khoangcach >= nguongMotor && !motorState)
+        toggleMotor(true);
       if (sensorData.khoangcach < nguongMotor && motorState) toggleMotor(false);
     }
   }, [sensorData, autoMode]);
 
   // ======== Voice Control ========
   useEffect(() => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window))
+      return;
 
     if (!recognitionRef.current) {
-      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const Recognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
       const recog = new Recognition();
       recog.lang = "vi-VN";
       recog.continuous = true;
@@ -140,7 +170,9 @@ const WaterSensor = () => {
         {/* Hiển thị mực nước */}
         <div className="flex-1 bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
           <p className="text-lg font-medium mb-3">Khoảng cách đến mặt nước</p>
-          <span className="text-2xl text-red-500 font-semibold">{sensorData.khoangcach} cm</span>
+          <span className="text-2xl text-red-500 font-semibold">
+            {sensorData.khoangcach} cm
+          </span>
         </div>
 
         {/* Trạng thái motor */}
@@ -183,7 +215,9 @@ const WaterSensor = () => {
           <button
             onClick={() => setIsListening(!isListening)}
             className={`px-6 py-2 rounded-lg text-white ${
-              isListening ? "bg-gray-400 animate-pulse" : "bg-cyan-400 hover:bg-cyan-500"
+              isListening
+                ? "bg-gray-400 animate-pulse"
+                : "bg-cyan-400 hover:bg-cyan-500"
             }`}
           >
             {isListening ? "Ngừng nghe giọng nói" : "Điều khiển bằng giọng nói"}
@@ -201,7 +235,9 @@ const WaterSensor = () => {
               onChange={(e) => setThresholdInput(e.target.value)}
               className="min-w-[300px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
-            <p className="text-lg font-medium">Ngưỡng hiện tại: {nguongMotor}</p>
+            <p className="text-lg font-medium">
+              Ngưỡng hiện tại: {nguongMotor}
+            </p>
           </div>
           <button
             onClick={handleThresholdUpdate}

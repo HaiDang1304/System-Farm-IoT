@@ -268,46 +268,6 @@ void callback(char *topic, byte *message, unsigned int length)
   }
   Serial.println("Noi dung: " + stMessage);
 
-  // ----------- LỊCH BẬT/TẮT ĐÈN -----------
-  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ScheduleLed")
-  {
-    if (scheduleCount < 10)
-    {
-      StaticJsonDocument<256> doc;
-      DeserializationError error = deserializeJson(doc, stMessage);
-      if (error)
-      {
-        Serial.println("Loi parse JSON lich: " + String(error.c_str()));
-        return;
-      }
-      if (!doc.containsKey("year") || !doc.containsKey("month") || !doc.containsKey("day") ||
-          !doc.containsKey("hour") || !doc.containsKey("minute") || !doc.containsKey("state"))
-      {
-        Serial.println("JSON thieu truong du lieu");
-        return;
-      }
-      schedules[scheduleCount] = {
-          doc["year"], doc["month"], doc["day"],
-          doc["hour"], doc["minute"], doc["state"],
-          false};
-      Serial.println("Lich moi da duoc them: " + String(schedules[scheduleCount].year) + "/" +
-                     String(schedules[scheduleCount].month) + "/" + String(schedules[scheduleCount].day) + " " +
-                     String(schedules[scheduleCount].hour) + ":" + String(schedules[scheduleCount].minute) + " - " +
-                     (schedules[scheduleCount].state ? "ON" : "OFF"));
-      scheduleCount++;
-    }
-    else
-    {
-      Serial.println("Da dat gioi han 10 lich");
-    }
-  }
-
-  // ----------- XÓA LỊCH LED -----------
-  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/DeleteScheduleLed")
-  {
-    Serial.println("Nhan lenh xoa lich tai vi tri: " + stMessage + ", bo qua vi cleanupSchedules da xu ly");
-  }
-
   // ----------- BẬT / TẮT LED NGAY LẬP TỨC -----------
   if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/LED")
   {
@@ -336,6 +296,35 @@ void callback(char *topic, byte *message, unsigned int length)
         digitalWrite(led, LOW);
         Serial.println(" Đèn LED đã TẮT (thủ công)");
       }
+    }
+  }
+
+  if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ThresholdLdr")
+  {
+    Serial.println(" Nhận lệnh ThresholdLdr: " + stMessage);
+
+    int newThreshold;
+    StaticJsonDocument<128> doc;
+    DeserializationError error = deserializeJson(doc, stMessage);
+
+    if (!error && doc.containsKey("action"))
+    {
+      newThreshold = doc["action"].as<int>();
+    }
+    else
+    {
+
+      newThreshold = stMessage.toInt();
+    }
+
+    if (newThreshold >= 0 && newThreshold <= 4095)
+    {
+      nguongLdr = newThreshold;
+      Serial.println(" Ngưỡng LDR đã cập nhật: " + String(nguongLdr));
+    }
+    else
+    {
+      Serial.println(" Ngưỡng không hợp lệ: " + String(newThreshold) + " (Phải từ 0-4095)");
     }
   }
 
@@ -371,7 +360,7 @@ void callback(char *topic, byte *message, unsigned int length)
   if (String(topic) == "HeThongNongTraiThongMinh/DHT22/Control/ThresholdDht")
   {
     float newThreshold = stMessage.toFloat();
-    if (newThreshold >= -10 || newThreshold <= 50)
+    if (newThreshold >= -10 && newThreshold <= 50)
     {
       nguongDht = newThreshold;
       Serial.println("Nguong DHT22 da duoc cap nhat: " + String(nguongDht));
@@ -461,39 +450,6 @@ void callback(char *topic, byte *message, unsigned int length)
     }
   }
 
-  // // ----------- LDR -----------
-  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/LED")
-  // {
-  //   if (stMessage == "LIGHT_ON")
-  //   {
-  //     digitalWrite(led, HIGH);
-  //     automodeLdr = false;
-  //     Serial.println("Den da BAT");
-  //   }
-  //   else if (stMessage == "LIGHT_OFF")
-  //   {
-  //     digitalWrite(led, LOW);
-  //     automodeLdr = false;
-  //     Serial.println("Den da TAT");
-  //   }
-  // }
-
-  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/automodeLdr")
-  // {
-  //   automodeLdr = (stMessage == "ON");
-  //   Serial.println("Chuc nang tu dong LDR: " + String(automodeLdr ? "ON" : "OFF"));
-  // }
-
-  // if (String(topic) == "HeThongNongTraiThongMinh/LDR/Control/ThresholdLdr")
-  // {
-  //   float newThreshold = stMessage.toFloat();
-  //   if (newThreshold >= 0 && newThreshold <= 1000)
-  //   {
-  //     nguongLdr = newThreshold;
-  //     Serial.println("Ngưỡng LDR mới: " + String(nguongLdr));
-  //   }
-  // }
-
   // ----------- HC-SR04 / bơm bể -----------
   if (String(topic) == "HeThongNongTraiThongMinh/HCSR04/Control/MOTOR")
   {
@@ -544,6 +500,7 @@ void callback(char *topic, byte *message, unsigned int length)
     automodeDoamdat = (stMessage == "ON");
     Serial.println("Chuc nang tu dong Doamdat: " + String(automodeDoamdat ? "ON" : "OFF"));
   }
+
   if (String(topic) == "HeThongNongTraiThongMinh/Doamdat/Control/nguongbatmaybomtuoicay")
   {
     float newThreshold = stMessage.toFloat();
@@ -554,7 +511,6 @@ void callback(char *topic, byte *message, unsigned int length)
     }
   }
 
-  // ----------- Độ ẩm đất / bơm tưới -----------
   if (String(topic) == "HeThongNongTraiThongMinh/Doamdat/Control/MOTOR")
   {
     automodeDoamdat = false;
@@ -566,12 +522,12 @@ void callback(char *topic, byte *message, unsigned int length)
     if (action == "ON")
     {
       controlStepperMotorTuoi(true);
-      Serial.println("💧 Bật bơm tưới");
+      Serial.println(" Bật bơm tưới");
     }
     else if (action == "OFF")
     {
       controlStepperMotorTuoi(false);
-      Serial.println("💧 Tắt bơm tưới");
+      Serial.println("Tắt bơm tưới");
     }
   }
 
@@ -801,7 +757,7 @@ void loop()
   checkingSchedules = false;
 
   static unsigned long lastNTP = 0;
-  if (millis() - lastNTP > 30000)
+  if (millis() - lastNTP > 10000)
   {
     lastNTP = millis();
 

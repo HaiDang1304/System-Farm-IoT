@@ -125,15 +125,37 @@ const SoilMoistureSensor = () => {
   };
 
   //  Cập nhật ngưỡng tự động
-  const updateThreshold = () => {
+  const updateThreshold = async () => {
     const newValue = parseInt(inputThreshold);
-    if (isNaN(newValue)) {
-      alert("Vui lòng nhập giá trị hợp lệ!");
+    if (isNaN(newValue) || newValue < 0 || newValue > 4095) {
+      alert("Vui lòng nhập giá trị hợp lệ (0-4095)!");
       return;
     }
-    setThreshold(newValue);
-    setInputThreshold("");
-    speak(`Đã cập nhật ngưỡng tự động là ${newValue}`);
+
+    try {
+      const res = await fetch(CONTROL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          device: "ThresholdDoamdat", 
+          action: newValue, 
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server trả lỗi ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("Đã cập nhật ngưỡng độ ẩm đất:", data);
+
+      // Cập nhật state
+      setThreshold(newValue);
+      setInputThreshold("");
+      speak(`Đã cập nhật ngưỡng tự động là ${newValue}`);
+    } catch (error) {
+      console.error("Lỗi cập nhật ngưỡng:", error);
+    }
   };
 
   return (
