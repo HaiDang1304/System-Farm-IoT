@@ -38,7 +38,7 @@ const DHT22 = () => {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 3000);
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 

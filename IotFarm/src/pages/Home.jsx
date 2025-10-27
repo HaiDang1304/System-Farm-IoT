@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import WeatherWidget from "../components/WeatherWeget";
 import DHT22 from "./DHT22.JSX";
 
-const API_URL = "http://localhost:3000/data"; // URL backend Node.js
+const API_URL = "http://localhost:3000/data";
 
 const Home = () => {
   const [sensorData, setSensorData] = useState(null);
@@ -32,8 +32,8 @@ const Home = () => {
     };
 
     fetchData();
-    // Tự động cập nhật mỗi 5 giây
-    const interval = setInterval(fetchData, 5000);
+    // Tự động cập nhật mỗi giây
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 
