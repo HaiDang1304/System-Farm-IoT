@@ -38,7 +38,7 @@ const DHT22 = () => {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, []);
 
@@ -323,3 +323,5 @@ const DHT22 = () => {
 };
 
 export default DHT22;
+
+

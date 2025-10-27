@@ -5,7 +5,7 @@ const API_URL = "http://localhost:3000/data";
 const CONTROL_URL = "http://localhost:3000/control";
 
 const SoilMoistureSensor = () => {
-  const [sensorData, setSensorData] = useState({ doamdat: 0 });
+  const [sensorData, setSensorData] = useState({ doamdat: 0, doamdatPercent: 0 });
   const [isPumpOn, setIsPumpOn] = useState(false);
   const [autoMode, setAutoMode] = useState(false);
   const [threshold, setThreshold] = useState(2000);
@@ -54,24 +54,33 @@ const SoilMoistureSensor = () => {
       try {
         const response = await fetch(API_URL);
         const data = await response.json();
-        const newData = Array.isArray(data) ? data[0] : data;
-        setSensorData(newData);
-        console.log("Độ ẩm đất:", newData.doamdat);
+                const newData = Array.isArray(data) ? data[0] : data;
+        const moisturePercent =
+          typeof newData?.doamdatPercent === "number"
+            ? newData.doamdatPercent
+            : typeof newData?.doamdat === "number"
+            ? Math.min(100, Math.max(0, (newData.doamdat / 4095) * 100))
+            : null;
 
-        if (autoMode) {
+        setSensorData({
+          ...newData,
+          doamdatPercent: moisturePercent,
+        });
+        console.log("Do am dat (raw):", newData?.doamdat, "percent:", moisturePercent);
+
+        if (autoMode && typeof newData?.doamdat === "number") {
           if (newData.doamdat <= threshold && !isPumpOn) {
-            handleTogglePump(true); // bật máy bơm
+            handleTogglePump(true); // bat may bom
           } else if (newData.doamdat > threshold && isPumpOn) {
-            handleTogglePump(false); // tắt máy bơm
+            handleTogglePump(false); // tat may bom
           }
-        }
-      } catch (error) {
+        }} catch (error) {
         console.error("Lỗi không fetch được dữ liệu:", error);
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, [autoMode, isPumpOn, threshold]);
 
@@ -174,7 +183,7 @@ const SoilMoistureSensor = () => {
           <div className="flex items-center ml-5">
             <p className="text-lg px-2 font-medium">Độ ẩm đất hiện tại:</p>
             <span className="text-2xl text-red-500 font-semibold">
-              {sensorData.doamdat}%
+              {typeof sensorData.doamdatPercent === "number" ? sensorData.doamdatPercent.toFixed(1) : "--"}%
             </span>
           </div>
         </div>
@@ -257,3 +266,8 @@ const SoilMoistureSensor = () => {
 };
 
 export default SoilMoistureSensor;
+
+
+
+
+

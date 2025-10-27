@@ -37,7 +37,7 @@ const LightSensor = () => {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, []);
 
@@ -252,3 +252,5 @@ const LightSensor = () => {
 };
 
 export default LightSensor;
+
+

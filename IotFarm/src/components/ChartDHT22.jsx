@@ -68,7 +68,7 @@ const ChartDHT22 = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); // cập nhật mỗi 5 giây
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, []);
 
@@ -102,3 +102,5 @@ const ChartDHT22 = () => {
 };
 
 export default ChartDHT22;
+
+

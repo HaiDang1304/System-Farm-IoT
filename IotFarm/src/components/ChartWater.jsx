@@ -58,7 +58,7 @@ const ChartWaterLevel = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); 
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, []);
 
@@ -92,3 +92,5 @@ const ChartWaterLevel = () => {
 };
 
 export default ChartWaterLevel;
+
+

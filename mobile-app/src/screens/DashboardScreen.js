@@ -10,15 +10,7 @@ import { palette } from "../theme/colors";
 import { useAuth } from "../context/AuthContext";
 import { useSensorData } from "../hooks/useSensorData";
 import { SensorCard } from "../components/SensorCard";
-import SimpleLineChart from "../components/SimpleLineChart";
 import { SENSOR_LIST } from "../services/sensorConfig";
-
-const HARD_CHARTS = [
-  { metricKey: "nhietdo", title: "Đường nhiệt độ", color: "#ef4444" },
-  { metricKey: "doam", title: "Đường độ ẩm không khí", color: "#22c55e" },
-  { metricKey: "doamdat", title: "Đường độ ẩm đất", color: "#0ea5e9" },
-  { metricKey: "anhsang", title: "Đường ánh sáng", color: "#f97316" },
-];
 
 const formatValue = (value) => {
   if (value === null || value === undefined) return "--";
@@ -33,7 +25,7 @@ const formatValue = (value) => {
 
 const DashboardScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { data, latest, loading, error, refresh } = useSensorData();
+  const { latest, loading, error, refresh } = useSensorData();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
@@ -44,18 +36,10 @@ const DashboardScreen = ({ navigation }) => {
 
   const greeting = useMemo(() => {
     const hours = new Date().getHours();
-    if (hours < 11) return "Chào buổi sáng";
-    if (hours < 18) return "Chào buổi chiều";
-    return "Chào buổi tối";
+    if (hours < 11) return "Chao buoi sang";
+    if (hours < 18) return "Chao buoi chieu";
+    return "Chao buoi toi";
   }, []);
-
-  const chartConfigs = useMemo(
-    () =>
-      HARD_CHARTS.filter(
-        (item) => latest && latest[item.metricKey] !== undefined
-      ),
-    [latest]
-  );
 
   return (
     <ScrollView
@@ -67,16 +51,16 @@ const DashboardScreen = ({ navigation }) => {
     >
       <View style={styles.header}>
         <Text style={styles.greeting}>
-          {greeting}, {user?.email?.split("@")[0] || "nhà nông thông minh"} 👋
+          {greeting}, {user?.email?.split("@")[0] || "nha nong thong minh"}!
         </Text>
         <Text style={styles.subtitle}>
-          Theo dõi điều kiện môi trường và thiết bị trong trang trại.
+          Theo doi dieu kien moi truong va thiet bi trong trang trai.
         </Text>
       </View>
 
       {error ? (
         <View style={styles.errorBox}>
-          <Text style={styles.errorTitle}>Không thể tải dữ liệu</Text>
+          <Text style={styles.errorTitle}>Khong the tai du lieu</Text>
           <Text style={styles.errorMessage}>{error.message}</Text>
         </View>
       ) : null}
@@ -104,23 +88,8 @@ const DashboardScreen = ({ navigation }) => {
         })}
       </View>
 
-      {chartConfigs.length > 0 ? (
-        <View style={styles.chartSection}>
-          <Text style={styles.sectionTitle}>Xu hướng gần đây</Text>
-          {chartConfigs.map((chart) => (
-            <SimpleLineChart
-              key={chart.metricKey}
-              data={data}
-              metricKey={chart.metricKey}
-              color={chart.color}
-              title={chart.title}
-            />
-          ))}
-        </View>
-      ) : null}
-
       {loading ? (
-        <Text style={styles.loadingHint}>Đang cập nhật dữ liệu...</Text>
+        <Text style={styles.loadingHint}>Dang cap nhat du lieu...</Text>
       ) : null}
     </ScrollView>
   );
@@ -150,15 +119,6 @@ const styles = StyleSheet.create({
   },
   cardsWrapper: {
     marginBottom: 16,
-  },
-  chartSection: {
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: palette.textPrimary,
-    marginBottom: 12,
   },
   loadingHint: {
     marginTop: 18,

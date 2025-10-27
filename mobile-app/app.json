@@ -27,7 +27,7 @@
     },
     "extra": {
       "apiBaseUrl": "http://localhost:3000",
-      "refreshInterval": 5000,
+      "refreshInterval": 30000,
       "googleAuth": {
         "expoClientId": "GOOGLE_EXPO_CLIENT_ID.apps.googleusercontent.com",
         "androidClientId": "GOOGLE_ANDROID_CLIENT_ID.apps.googleusercontent.com",

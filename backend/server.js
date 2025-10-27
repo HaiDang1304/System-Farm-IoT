@@ -275,6 +275,17 @@ const checkThresholdAndNotify = async () => {
 
     const alerts = [];
 
+    const soilPercent =
+      typeof data?.doamdatPercent === "number"
+        ? data.doamdatPercent
+        : typeof data?.doamdat === "number"
+        ? Math.min(100, Math.max(0, (data.doamdat / 4095) * 100))
+        : null;
+    const soilThresholdPercent =
+      typeof data?.nguongbatmaybomtuoicay === "number"
+        ? Math.min(100, Math.max(0, (data.nguongbatmaybomtuoicay / 4095) * 100))
+        : null;
+
     if (data.nhietdo > data.nguongbatdieuhoa)
       alerts.push(
         `Nhiệt độ cao: ${data.nhietdo}°C > ${data.nguongbatdieuhoa}°C`
@@ -289,7 +300,9 @@ const checkThresholdAndNotify = async () => {
       );
     if (data.doamdat < data.nguongbatmaybomtuoicay)
       alerts.push(
-        ` Độ ẩm đất thấp: ${data.doamdat} < ${data.nguongbatmaybomtuoicay}`
+        soilPercent !== null && soilThresholdPercent !== null
+          ? `Do am dat thap: ${soilPercent.toFixed(1)}% < ${soilThresholdPercent.toFixed(1)}%`
+          : `Do am dat thap: ${data.doamdat} < ${data.nguongbatmaybomtuoicay}`
       );
     if (data.mua === 1) alerts.push(` Phát hiện mưa!`);
 
@@ -333,3 +346,8 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(` Server đang chạy tại http://localhost:${PORT}`);
 });
+
+
+
+
+

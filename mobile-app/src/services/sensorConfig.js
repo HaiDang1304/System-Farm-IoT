@@ -37,7 +37,7 @@ export const SENSOR_CONFIG = {
     description: "Đảm bảo độ ẩm đất phù hợp cho cây trồng.",
     icon: { pack: "Feather", name: "droplet" },
     metrics: [
-      { key: "doamdat", label: "Độ ẩm đất", unit: "%", color: "#0ea5e9" },
+      { key: "doamdatPercent", label: "Độ ẩm đất", unit: "%", color: "#0ea5e9" },
     ],
     controls: [
       {
@@ -187,3 +187,4 @@ export const SENSOR_CONFIG = {
 };
 
 export const SENSOR_LIST = Object.values(SENSOR_CONFIG);
+
