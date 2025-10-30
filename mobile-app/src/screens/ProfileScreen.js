@@ -183,10 +183,10 @@ const ProfileScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.card}>
-        <Text style={styles.title}>Thong tin tai khoan</Text>
+        <Text style={styles.title}>Thông tin tài khoản</Text>
         <Text style={styles.label}>Email</Text>
         <Text style={styles.value}>{user?.email || "--"}</Text>
-        <Text style={styles.label}>Trang thai</Text>
+        <Text style={styles.label}>Trạng thái</Text>
         <Text style={styles.value}>
           {user?.emailVerified ? "Đã xác minh" : "Chưa xác minh"}
         </Text>

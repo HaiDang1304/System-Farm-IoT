@@ -1,7 +1,7 @@
 export const SENSOR_CONFIG = {
   dht22: {
     key: "dht22",
-    name: "Cảm biến DHT22",
+    name: "Cảm biến nhiệt độ & độ ẩm",
     description: "Theo dõi nhiệt độ và độ ẩm môi trường nhà kính.",
     icon: { pack: "Feather", name: "thermometer" },
     metrics: [
@@ -33,7 +33,7 @@ export const SENSOR_CONFIG = {
   },
   soil: {
     key: "soil",
-    name: "Độ ẩm đất",
+    name: "Cảm biến độ ẩm đất",
     description: "Đảm bảo độ ẩm đất phù hợp cho cây trồng.",
     icon: { pack: "Feather", name: "droplet" },
     metrics: [
@@ -64,7 +64,7 @@ export const SENSOR_CONFIG = {
   },
   light: {
     key: "light",
-    name: "Ánh sáng",
+    name: "Cảm biến ánh sáng",
     description: "Giám sát cường độ ánh sáng môi trường.",
     icon: { pack: "Feather", name: "sun" },
     metrics: [
@@ -95,7 +95,7 @@ export const SENSOR_CONFIG = {
   },
   gas: {
     key: "gas",
-    name: "Khí gas MQ-2",
+    name: "Cảm biến khí gas",
     description: "Theo dõi khí gas để cảnh báo cháy nổ.",
     icon: { pack: "Feather", name: "activity" },
     metrics: [
@@ -126,7 +126,7 @@ export const SENSOR_CONFIG = {
   },
   water: {
     key: "water",
-    name: "Mực nước bồn",
+    name: "Cảm biến mực nước",
     description: "Tránh tràn hoặc cạn bồn chứa nước.",
     icon: { pack: "Feather", name: "anchor" },
     metrics: [

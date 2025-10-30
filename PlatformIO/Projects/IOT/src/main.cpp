@@ -74,7 +74,7 @@ bool manualMotorBe = false; // true = đang điều khiển thủ công
 float nguongDht = 25.0;    // °C
 int nguongMq2 = 2500;      // raw 0..4095
 int nguongLdr = 1200;      // dùng LDR đảo
-int nguongDoamdat = 2000;  // đất khô khi < nguongDoamdat
+int nguongDoamdat = 2048;  // đất khô khi < nguongDoamdat
 float nguongHcsr04 = 20.0; // cm
 
 // Stepper non-blocking

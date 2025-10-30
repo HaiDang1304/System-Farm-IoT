@@ -104,7 +104,7 @@ const SensorsScreen = () => {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Thong ke tong quan</Text>
+        <Text style={styles.title}>Thống kê tổng quan</Text>
         <Text style={styles.subtitle}>
           Theo dõi xu hướng dữ liệu cảm biến theo thời gian.
         </Text>
