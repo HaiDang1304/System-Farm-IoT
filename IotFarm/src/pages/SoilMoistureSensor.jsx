@@ -11,20 +11,18 @@ const SoilMoistureSensor = () => {
   const [threshold, setThreshold] = useState(2000);
   const [inputThreshold, setInputThreshold] = useState("");
 
-  //  Hàm nói
+  // Nói bằng giọng nói
   const speak = (text) => {
     if (!window.speechSynthesis) return;
     const utter = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const vietnameseVoice = voices.find((v) => v.lang === "vi-VN");
-    if (vietnameseVoice) utter.voice = vietnameseVoice;
+    const vi = voices.find((v) => v.lang === "vi-VN");
+    if (vi) utter.voice = vi;
     utter.lang = "vi-VN";
-    utter.rate = 1;
-    utter.pitch = 1;
     window.speechSynthesis.speak(utter);
   };
 
-  //  Hàm điều khiển máy bơm (gửi lệnh đến server)
+  // Gửi lệnh điều khiển
   const handleTogglePump = (forceState = null) => {
     const newState = forceState !== null ? forceState : !isPumpOn;
     const action = newState ? "ON" : "OFF";
@@ -34,187 +32,128 @@ const SoilMoistureSensor = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ device: "WaterPump", action }),
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Lỗi khi gửi lệnh điều khiển");
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Lệnh điều khiển gửi thành công:", data);
+      .then((res) => res.json())
+      .then(() => {
         setIsPumpOn(newState);
         speak(`Máy bơm đã ${newState ? "bật" : "tắt"}`);
       })
-      .catch((error) => {
-        console.error("Lỗi khi gửi lệnh điều khiển:", error);
-      });
+      .catch((err) => console.error(err));
   };
 
-  //  Lấy dữ liệu cảm biến định kỳ
+  // Lấy dữ liệu định kỳ
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-                const newData = Array.isArray(data) ? data[0] : data;
-        const moisturePercent =
-          typeof newData?.doamdatPercent === "number"
-            ? newData.doamdatPercent
-            : typeof newData?.doamdat === "number"
-            ? Math.min(100, Math.max(0, (newData.doamdat / 4095) * 100))
-            : null;
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const newData = Array.isArray(data) ? data[0] : data;
+        setSensorData(newData);
 
-        setSensorData({
-          ...newData,
-          doamdatPercent: moisturePercent,
-        });
-        console.log("Do am dat (raw):", newData?.doamdat, "percent:", moisturePercent);
-
-        if (autoMode && typeof newData?.doamdat === "number") {
-          if (newData.doamdat <= threshold && !isPumpOn) {
-            handleTogglePump(true); // bat may bom
-          } else if (newData.doamdat > threshold && isPumpOn) {
-            handleTogglePump(false); // tat may bom
-          }
-        }} catch (error) {
-        console.error("Lỗi không fetch được dữ liệu:", error);
+        if (autoMode) {
+          if (newData.doamdat <= threshold && !isPumpOn) handleTogglePump(true);
+          if (newData.doamdat > threshold && isPumpOn) handleTogglePump(false);
+        }
+      } catch (err) {
+        console.error("Lỗi fetch:", err);
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
-    return () => clearInterval(interval);
+    const timer = setInterval(fetchData, 10000);
+    return () => clearInterval(timer);
   }, [autoMode, isPumpOn, threshold]);
 
-  //  Điều khiển bằng giọng nói
+  // Nhận lệnh giọng nói
   const startVoiceControl = () => {
     if (!("webkitSpeechRecognition" in window)) {
-      alert("Trình duyệt của bạn không hỗ trợ điều khiển giọng nói.");
+      alert("Trình duyệt không hỗ trợ giọng nói.");
       return;
     }
-
     const recognition = new window.webkitSpeechRecognition();
     recognition.lang = "vi-VN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      console.log("Lệnh giọng nói:", transcript);
-
-      if (transcript.includes("bật máy bơm")) {
-        handleTogglePump(true);
-      } else if (transcript.includes("tắt máy bơm")) {
-        handleTogglePump(false);
-      } else if (transcript.includes("bật tự động")) {
+    recognition.onresult = (e) => {
+      const cmd = e.results[0][0].transcript.toLowerCase();
+      if (cmd.includes("bật máy bơm")) handleTogglePump(true);
+      else if (cmd.includes("tắt máy bơm")) handleTogglePump(false);
+      else if (cmd.includes("bật tự động")) {
         setAutoMode(true);
         speak("Đã bật chế độ tự động tưới nước.");
-      } else if (transcript.includes("tắt tự động")) {
+      } else if (cmd.includes("tắt tự động")) {
         setAutoMode(false);
-        speak("Đã tắt chế độ tự động tưới nước.");
-      } else {
-        speak("Tôi không hiểu lệnh, vui lòng nói lại.");
-      }
+        speak("Đã tắt chế độ tự động.");
+      } else speak("Không hiểu lệnh, xin hãy nói lại.");
     };
-
-    recognition.onerror = (event) => {
-      console.error("Lỗi nhận dạng giọng nói:", event.error);
-    };
-
     recognition.start();
-    speak("Xin chào Đại Ca, tôi đang lắng nghe lệnh điều khiển máy bơm.");
+    speak("Xin chào Đại Ca, tôi đang lắng nghe.");
   };
 
-  const handleToggleAuto = () => {
-    const newState = !isAutoMode;
-    setIsAutoMode(newState);
-    const msg = newState
-      ? " Đã bật chế độ tự động."
-      : " Đã tắt chế độ tự động.";
-    setVoiceMessage(msg);
-    speak(msg);
-  };
-
-  //  Cập nhật ngưỡng tự động
+  // Cập nhật ngưỡng
   const updateThreshold = async () => {
     const newValue = parseInt(inputThreshold);
     if (isNaN(newValue) || newValue < 0 || newValue > 4095) {
-      alert("Vui lòng nhập giá trị hợp lệ (0-4095)!");
+      alert("Giá trị phải từ 0-4095");
       return;
     }
-
     try {
-      const res = await fetch(CONTROL_URL, {
+      await fetch(CONTROL_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          device: "ThresholdDoamdat", 
-          action: newValue, 
-        }),
+        body: JSON.stringify({ device: "ThresholdDoamdat", action: newValue }),
       });
-
-      if (!res.ok) {
-        throw new Error(`Server trả lỗi ${res.status}`);
-      }
-
-      const data = await res.json();
-      console.log("Đã cập nhật ngưỡng độ ẩm đất:", data);
-
-      // Cập nhật state
       setThreshold(newValue);
       setInputThreshold("");
-      speak(`Đã cập nhật ngưỡng tự động là ${newValue}`);
-    } catch (error) {
-      console.error("Lỗi cập nhật ngưỡng:", error);
+      speak(`Đã cập nhật ngưỡng là ${newValue}`);
+    } catch (err) {
+      console.error("Lỗi cập nhật ngưỡng:", err);
     }
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-3xl font-semibold text-blue-500 text-center">
+    <div className="p-4 sm:p-6 lg:p-8 mx-auto">
+      {/* Header */}
+      <h2 className="text-2xl sm:text-3xl font-semibold text-blue-600 text-center">
         Giám Sát Độ Ẩm Đất
       </h2>
-      <p className="text-md text-gray-500 text-center mt-2">
-        Bằng cảm biến độ ẩm đất
+      <p className="text-sm sm:text-base text-gray-500 text-center mt-2">
+        Theo dõi và điều khiển hệ thống tưới nước thông minh
       </p>
-      <p className="text-2xl font-medium mt-3">Thông tin độ ẩm đất</p>
 
-      <div className="flex flex-wrap gap-4 mt-4 min-h-full">
-        {/* --- Độ ẩm đất --- */}
-        <div className="flex-1 bg-blue-200 rounded-xl py-10">
-          <div className="flex items-center ml-5">
-            <p className="text-lg px-2 font-medium">Độ ẩm đất hiện tại:</p>
-            <span className="text-2xl text-red-500 font-semibold">
-              {typeof sensorData.doamdatPercent === "number" ? sensorData.doamdatPercent.toFixed(1) : "--"}%
-            </span>
-          </div>
+      {/* 2 khối đầu: độ ẩm & trạng thái bơm */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        {/* Độ ẩm */}
+        <div className="bg-blue-100 rounded-xl p-6 flex flex-col justify-center">
+          <p className="text-lg font-medium mb-2">Độ ẩm đất hiện tại:</p>
+          <p className="text-3xl font-bold text-blue-600 text-center">
+            {sensorData.doamdat}%
+          </p>
         </div>
 
-        {/* --- Trạng thái bơm --- */}
-        <div className="flex-1 bg-green-200 rounded-xl py-10">
-          <div className="flex justify-between items-center px-4">
-            <div className="flex items-center space-x-2">
-              <p className="text-lg font-medium">Trạng thái bơm tới:</p>
-              <p
-                className={`font-semibold ${
-                  isPumpOn ? "text-green-700" : "text-red-600"
-                }`}
-              >
-                {isPumpOn ? "Đang bật" : "Đang tắt"}
-              </p>
-            </div>
-            <button
-              onClick={() => handleTogglePump()}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+        {/* Trạng thái bơm */}
+        <div className="bg-green-100 rounded-xl p-6 flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-lg font-medium">Trạng thái máy bơm:</p>
+            <p
+              className={`font-semibold ${
+                isPumpOn ? "text-green-700" : "text-red-600"
+              }`}
             >
-              {isPumpOn ? "Tắt Máy Bơm" : "Bật Máy Bơm"}
-            </button>
+              {isPumpOn ? "Đang bật" : "Đang tắt"}
+            </p>
           </div>
+          <button
+            onClick={() => handleTogglePump()}
+            className="w-full py-2 mt-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            {isPumpOn ? "Tắt Máy Bơm" : "Bật Máy Bơm"}
+          </button>
         </div>
       </div>
 
-      {/* --- Chế độ tự động & giọng nói --- */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-8 mt-6">
-        <div className="mt-6 flex items-center gap-4 justify-between">
-          <div className="flex items-center gap-4">
+      {/* Khu vực điều khiển */}
+      <div className="bg-white p-6 sm:p-8 rounded-xl shadow-md mt-8">
+        {/* Auto & Voice */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
             <p className="text-lg font-medium">Chế độ tự động</p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -223,43 +162,49 @@ const SoilMoistureSensor = () => {
                 onChange={() => setAutoMode(!autoMode)}
                 className="sr-only peer"
               />
-              <div className="w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-purple-500 transition duration-300"></div>
-              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 peer-checked:translate-x-6"></div>
+              <div className="w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-purple-500 transition"></div>
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-6 transition"></div>
             </label>
           </div>
+
           <button
             onClick={startVoiceControl}
-            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition w-full sm:w-auto"
           >
-            Điều khiển giọng nói
+             Điều khiển giọng nói
           </button>
         </div>
 
-        {/* --- Cập nhật ngưỡng --- */}
-        <div className="flex items-center justify-between mt-6 gap-4">
-          <div className="flex items-center text-center gap-4">
-            <p className="text-lg font-medium">Cập nhật ngưỡng</p>
+        {/* Ngưỡng */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <label className="text-lg font-medium">Cập nhật ngưỡng:</label>
             <input
               type="number"
               value={inputThreshold}
               onChange={(e) => setInputThreshold(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 mt-2 w-48"
-              placeholder="Ngưỡng (%)"
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-40"
+              placeholder="0 - 4095"
             />
           </div>
+
           <button
             onClick={updateThreshold}
-            className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition w-full sm:w-auto"
           >
             Cập nhật
           </button>
         </div>
 
-        <p className="text-lg font-medium mt-6">
+        <p className="mt-4 text-center sm:text-left text-lg font-medium">
           Ngưỡng hiện tại:{" "}
           <span className="text-blue-600 font-semibold">{threshold}</span>
         </p>
-        <ChartSoilMoisture />
+
+        {/* Biểu đồ */}
+        <div className="mt-8">
+          <ChartSoilMoisture />
+        </div>
       </div>
     </div>
   );

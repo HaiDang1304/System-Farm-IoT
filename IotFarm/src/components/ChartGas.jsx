@@ -59,7 +59,8 @@ const ChartGas = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
+
+    const interval = setInterval(fetchData, 20000); // cập nhật mỗi 5 giây
     return () => clearInterval(interval);
   }, []);
 
