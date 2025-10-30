@@ -11,7 +11,7 @@ const GasSensor = () => {
   });
   const [threshold, setThreshold] = useState("");
   const [isBuzzerOn, setIsBuzzerOn] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(true);
+  const [isAutoMode, setIsAutoMode] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
 

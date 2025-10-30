@@ -68,7 +68,7 @@ const ChartDHT22 = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); // cập nhật mỗi 5 giây
+    const interval = setInterval(fetchData, 20000); // cập nhật mỗi 5 giây
     return () => clearInterval(interval);
   }, []);
 
