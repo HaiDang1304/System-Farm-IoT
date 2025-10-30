@@ -36,9 +36,9 @@ const DashboardScreen = ({ navigation }) => {
 
   const greeting = useMemo(() => {
     const hours = new Date().getHours();
-    if (hours < 11) return "Chao buoi sang";
-    if (hours < 18) return "Chao buoi chieu";
-    return "Chao buoi toi";
+    if (hours < 11) return "Chào buổi sáng";
+    if (hours < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
   }, []);
 
   return (
@@ -54,13 +54,13 @@ const DashboardScreen = ({ navigation }) => {
           {greeting}, {user?.email?.split("@")[0] || "nha nong thong minh"}!
         </Text>
         <Text style={styles.subtitle}>
-          Theo doi dieu kien moi truong va thiet bi trong trang trai.
+          Theo dõi và quản lý hệ thống nông nghiệp IoT của bạn
         </Text>
       </View>
 
       {error ? (
         <View style={styles.errorBox}>
-          <Text style={styles.errorTitle}>Khong the tai du lieu</Text>
+          <Text style={styles.errorTitle}>Không thể tải dữ liệu</Text>
           <Text style={styles.errorMessage}>{error.message}</Text>
         </View>
       ) : null}
@@ -89,7 +89,7 @@ const DashboardScreen = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <Text style={styles.loadingHint}>Dang cap nhat du lieu...</Text>
+        <Text style={styles.loadingHint}>Đang cập nhật dữ liệu...</Text>
       ) : null}
     </ScrollView>
   );

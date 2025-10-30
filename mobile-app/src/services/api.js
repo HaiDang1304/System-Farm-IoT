@@ -12,7 +12,7 @@ const withUrl = (path) => {
 export const fetchSensorData = async () => {
   const response = await fetch(withUrl("/data"));
   if (!response.ok) {
-    throw new Error(`Khong the tai du lieu (HTTP ${response.status})`);
+    throw new Error(`Không thể tải dữ liệu (HTTP ${response.status})`);
   }
   const data = await response.json();
   return Array.isArray(data) ? data : [data];
@@ -28,7 +28,7 @@ export const sendControlCommand = async ({ device, action }) => {
   if (!response.ok) {
     const message = await response.text();
     throw new Error(
-      message || `Gui lenh that bai (HTTP ${response.status})`.trim()
+      message || `Gửi lệnh thất bại (HTTP ${response.status})`.trim()
     );
   }
 
@@ -41,7 +41,7 @@ export const sendThresholdValue = async (device, value) => {
 
 export const fetchNotificationSettings = async (userId) => {
   if (!userId) {
-    throw new Error("Thieu userId de tai cai dat.");
+    throw new Error("Thiếu userId để tải cài đặt.");
   }
 
   const response = await fetch(
@@ -49,7 +49,7 @@ export const fetchNotificationSettings = async (userId) => {
   );
 
   if (!response.ok) {
-    throw new Error(`Khong the tai cai dat (HTTP ${response.status})`);
+    throw new Error(`Không thể tải cài đặt (HTTP ${response.status})`);
   }
 
   return response.json();
@@ -57,7 +57,7 @@ export const fetchNotificationSettings = async (userId) => {
 
 export const updateNotificationSettings = async (userId, notifications) => {
   if (!userId) {
-    throw new Error("Thieu userId de cap nhat cai dat.");
+    throw new Error("Thiếu userId để tải cài đặt.");
   }
 
   const response = await fetch(withUrl("/updateSettings"), {
@@ -74,7 +74,7 @@ export const updateNotificationSettings = async (userId, notifications) => {
   if (!response.ok) {
     const message = await response.text();
     throw new Error(
-      message || `Cap nhat cai dat that bai (HTTP ${response.status})`.trim()
+      message || `Cập nhật cài đặt thất bại (HTTP ${response.status})`.trim()
     );
   }
 

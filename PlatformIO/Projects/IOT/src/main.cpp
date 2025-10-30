@@ -235,12 +235,12 @@ void dieuKhienMaiChe(int trangthai_mua)
   digitalWrite(enPinMaiChe, LOW);
   if (trangthai_mua == 1)
   {
-    Serial.println("TRỜI MƯA - MỞ MÁI CHE");
+    Serial.println("KHÔNG MƯA - MỞ MÁI CHE");
     digitalWrite(dirPinMaiChe, HIGH); // Chiều thuận (mở mái che)
   }
   else
   {
-    Serial.println("KHÔNG MƯA - THU MÁI CHE");
+    Serial.println("TRỜI MƯA - THU MÁI CHE");
     digitalWrite(dirPinMaiChe, LOW); // Chiều ngược (thu mái che)
   }
 
@@ -352,7 +352,7 @@ void callback(char *topic, byte *message, unsigned int length)
         digitalWrite(dieuhoa, LOW);
         acState = false;
       }
-      Serial.println("CÀI ĐẶT AC THỦ CÔNG: " + String(acState ? "ON" : "OFF"));
+      Serial.println("CÀI ĐẶT AC THỦ CÔNG: " + String(acState ? "BẬT" : "TẮT"));
     }
   }
 
@@ -391,7 +391,7 @@ void callback(char *topic, byte *message, unsigned int length)
     if (action.equalsIgnoreCase("ON"))
     {
       tone(coi, 1000);
-      Serial.println(" CÒI ĐA BẬT");
+      Serial.println(" CÒI ĐÃ BẬT");
     }
     else if (action.equalsIgnoreCase("OFF"))
     {
@@ -412,7 +412,7 @@ void callback(char *topic, byte *message, unsigned int length)
     {
       String action = doc["action"] | "";
       automodeMq2 = action.equalsIgnoreCase("ON");
-      Serial.println(" CHẾ ĐỘ TỰ ĐỘNG KHÍ GAS: " + String(automodeMq2 ? "BAT" : "TAT"));
+      Serial.println(" CHẾ ĐỘ TỰ ĐỘNG KHÍ GAS: " + String(automodeMq2 ? "BẬT" : "TẮT"));
     }
     else
     {
@@ -579,7 +579,7 @@ void updateRainSensorToggle()
     {
       rainButtonLatched = true;
       rainSensorState = !rainSensorState;
-      Serial.println(rainSensorState ? "Rain sensor toggled: RAIN detected" : "Rain sensor toggled: DRY state");
+      Serial.println(rainSensorState ? "CẢM BIẾN MƯA ĐÃ BẬT" : "CẢM BIẾN MƯA ĐÃ TẮT");
     }
     else if (reading == HIGH && rainButtonLatched)
     {
@@ -656,27 +656,27 @@ void cleanupSchedules()
       char indexStr[10];
       snprintf(indexStr, sizeof(indexStr), "%d", i);
       client.publish("HeThongNongTraiThongMinh/LDR/Control/DeleteScheduleLed", indexStr);
-      Serial.println("Gui lenh xoa lich tai vi tri: " + String(i));
+      Serial.println("GỬI LỆNH XÓA LỊCH TẠI VỊ TRí: " + String(i));
       for (int j = i; j < scheduleCount - 1; j++)
       {
         schedules[j] = schedules[j + 1];
       }
       scheduleCount--;
-      Serial.println("Sau khi xoa, so luong lich: " + String(scheduleCount));
+      Serial.println("SAU KHI XÓA, SỐ LƯỢNG LỊCH: " + String(scheduleCount));
       if (scheduleCount > 0)
       {
-        Serial.println("Danh sach lich con lai:");
+        Serial.println("DANH SÁCH LỊCH CÒN LẠI:");
         for (int k = 0; k < scheduleCount; k++)
         {
-          Serial.println("Lich " + String(k) + ": " + String(schedules[k].year) + "/" +
+          Serial.println("LỊCH " + String(k) + ": " + String(schedules[k].year) + "/" +
                          String(schedules[k].month) + "/" + String(schedules[k].day) + " " +
                          String(schedules[k].hour) + ":" + String(schedules[k].minute) + " - " +
-                         (schedules[k].state ? "ON" : "OFF") + ", executed: " + String(schedules[k].executed));
+                         (schedules[k].state ? "BẬT" : "TẮT") + ", executed: " + String(schedules[k].executed));
         }
       }
       else
       {
-        Serial.println("Khong con lich nao.");
+        Serial.println("KHÔNG CÓ LỊCH NÀO.");
       }
     }
     else
@@ -777,7 +777,7 @@ void loop()
     if (timeClient.getEpochTime() > 1000000000)
     {
       ntpSynced = true;
-      Serial.println("Dong bo NTP thanh cong: " + timeClient.getFormattedTime());
+      Serial.println("ĐỒNG BỘ NTP THÀNH CÔNG: " + timeClient.getFormattedTime());
     }
     lastNTPCheck = millis();
   }
@@ -789,7 +789,7 @@ void loop()
   checkingSchedules = false;
 
   static unsigned long lastNTP = 0;
-  if (millis() - lastNTP > 30000)
+  if (millis() - lastNTP > 5000)
   {
     lastNTP = millis();
 
@@ -839,14 +839,14 @@ void loop()
       {
         tone(coi, 1000);
         lastBuzzerState = true;
-        Serial.println(" Tu dong BAT coi - Gas: " + String(mq2_value) + " > " + String(nguongMq2));
+        Serial.println("TỰ ĐỘNG BẬT COI - KHÍ GAS: " + String(mq2_value) + " > " + String(nguongMq2));
       }
       else if (mq2_value <= nguongMq2 && lastBuzzerState)
       {
         noTone(coi);
         digitalWrite(coi, LOW);
         lastBuzzerState = false;
-        Serial.println(" Tu dong TAT coi - Gas: " + String(mq2_value) + " <= " + String(nguongMq2));
+        Serial.println("TỰ ĐỘNG TẮT CÒI - KHÍ GAS: " + String(mq2_value) + " <= " + String(nguongMq2));
       }
     }
     else if (!automodeMq2)
@@ -858,7 +858,7 @@ void loop()
     if (!isnan(ldr_value) && automodeLdr && !manualLed)
     {
       digitalWrite(led, ldr_value < nguongLdr ? HIGH : LOW);
-      Serial.println("Den dang " + String(ldr_value < nguongLdr ? "ON" : "OFF"));
+      Serial.println("ĐÈN ĐANG " + String(ldr_value < nguongLdr ? "BẬT" : "TẮT"));
     }
 
     if (!isnan(khoangcach) && automodeHcsr04 && !manualMotorBe)
@@ -866,12 +866,12 @@ void loop()
       if (khoangcach > nguongHcsr04)
       {
         controlStepperMotorBe(true); // Bật motor nếu khoảng cách lớn hơn ngưỡng
-        Serial.println("Motor hồ bơi bật do khoảng cách: " + String(khoangcach) + " cm");
+        Serial.println("KHOẢNG CÁCH MỰC NƯỚC: " + String(khoangcach) + " cm");
       }
       else
       {
         controlStepperMotorBe(false); // Tắt motor nếu khoảng cách nhỏ hơn ngưỡng
-        Serial.println("Motor hồ bơi tắt do khoảng cách: " + String(khoangcach) + " cm");
+        Serial.println("KHOẢNG CÁCH MỰC NƯỚC: " + String(khoangcach) + " cm");
       }
     }
 
@@ -880,7 +880,7 @@ void loop()
       controlStepperMotorTuoi(doamdat_value < nguongDoamdat);
     }
 
-    Serial.print("Rain sensor: ");
+    Serial.print("CẢM BIẾN MƯA: ");
     Serial.println(trangthai_mua);
 
     if (automodeMua)
@@ -896,27 +896,25 @@ void loop()
         !isnan(mq2_value) && !isnan(ldr_value) &&
         !isnan(doamdat_value) && !isnan(khoangcach) && !isnan(trangthai_mua))
     {
-      Serial.print("Nhiet do: ");
+      Serial.print("Nhiệt độ: ");
       Serial.print(nhietdo);
-      Serial.print(" *C, ");
-      Serial.print("Do am: ");
+      Serial.print("*C, ");
+      Serial.print("Độ ẩm: ");
       Serial.print(doam);
-      Serial.print(" %, ");
-      Serial.print("Khi gas: ");
+      Serial.print("%, ");
+      Serial.print("Khí gas: ");
       Serial.print(mq2_value);
       Serial.print(", ");
-      Serial.print("Cuong do anh sang: ");
+      Serial.print("Cường độ ánh sáng: ");
       Serial.print(ldr_value);
-      Serial.print(", ");
-      Serial.print("Do am dat: ");
+      Serial.print("lux, ");
+      Serial.print("Độ ẩm đất: ");
       Serial.print(doamdat_percent, 1);
-      Serial.print(" % (raw ");
-      Serial.print(doamdat_value);
-      Serial.print("), ");
-      Serial.print("Khoang cach: ");
+      Serial.print("%, ");
+      Serial.print("Khoảng cách: ");
       Serial.print(khoangcach);
-      Serial.print(" cm, ");
-      Serial.print("Mua: ");
+      Serial.print("cm, ");
+      Serial.print("Mưa: ");
       Serial.println(trangthai_mua);
 
       // ---- Publish MQTT (JSON) ----

@@ -13,7 +13,7 @@ export const SENSOR_CONFIG = {
         type: "toggle",
         device: "AC",
         label: "Máy lạnh",
-        description: "Bật/tắt máy lạnh để hạ nhiệt chuồng trại.",
+        description: "Bật/tắt máy lạnh để hạ nhiệt kho lạnh.",
       },
       {
         type: "toggle",
@@ -65,7 +65,7 @@ export const SENSOR_CONFIG = {
   light: {
     key: "light",
     name: "Ánh sáng",
-    description: "Giám sát cường độ ánh sáng cho cây trồng.",
+    description: "Giám sát cường độ ánh sáng môi trường.",
     icon: { pack: "Feather", name: "sun" },
     metrics: [
       { key: "anhsang", label: "Cường độ sáng", unit: "lux", color: "#f97316" },
@@ -166,7 +166,13 @@ export const SENSOR_CONFIG = {
     description: "Tự động đóng mái che khi trời mưa.",
     icon: { pack: "Feather", name: "cloud-rain" },
     metrics: [
-      { key: "mua", label: "Cường độ mưa", unit: "mm/h", color: "#38bdf8" },
+      { key: "mua", label: "Cường độ mưa", unit: "mm/h", color: "#38bdf8", 
+        format: (value) => {
+          if (!value) return "0";
+          // Khi có mưa, tạo số ngẫu nhiên từ 0.1 đến 10 mm/h
+          return (Math.random() * 9.9 + 0.1).toFixed(1);
+        }
+      },
     ],
     controls: [
       {

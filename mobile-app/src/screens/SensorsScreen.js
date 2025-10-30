@@ -106,13 +106,13 @@ const SensorsScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Thong ke tong quan</Text>
         <Text style={styles.subtitle}>
-          Theo doi xu huong, gia tri trung binh va so sanh cac chi so quan trong.
+          Theo dõi xu hướng dữ liệu cảm biến theo thời gian.
         </Text>
       </View>
 
       {error ? (
         <View style={styles.errorBox}>
-          <Text style={styles.errorTitle}>Khong the tai du lieu</Text>
+          <Text style={styles.errorTitle}>Không thể tải dữ liệu</Text>
           <Text style={styles.errorMessage}>{error.message}</Text>
         </View>
       ) : null}
@@ -130,25 +130,25 @@ const SensorsScreen = () => {
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryMeta}>Trung binh</Text>
+              <Text style={styles.summaryMeta}>Trung bình</Text>
               <Text style={styles.summaryMetaValue}>
                 {formatNumber(stats.average)} {metric.unit}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryMeta}>Cao nhat</Text>
+              <Text style={styles.summaryMeta}>Cao nhất</Text>
               <Text style={styles.summaryMetaValue}>
                 {formatNumber(stats.max)} {metric.unit}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryMeta}>Thap nhat</Text>
+              <Text style={styles.summaryMeta}>Thấp nhất</Text>
               <Text style={styles.summaryMetaValue}>
                 {formatNumber(stats.min)} {metric.unit}
               </Text>
             </View>
             <View style={[styles.summaryRow, styles.summaryRowLast]}>
-              <Text style={styles.summaryMeta}>Thay doi gan nhat</Text>
+              <Text style={styles.summaryMeta}>Thay đổi gần nhất</Text>
               <Text
                 style={[
                   styles.summaryMetaValue,
@@ -169,7 +169,7 @@ const SensorsScreen = () => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Bieu do thoi gian</Text>
+        <Text style={styles.sectionTitle}>Biểu đồ thời gian</Text>
         {SENSOR_LIST.map((sensor) => (
           <View key={sensor.key} style={styles.sensorBlock}>
             <Text style={styles.sensorName}>{sensor.name}</Text>
@@ -188,7 +188,7 @@ const SensorsScreen = () => {
       </View>
 
       {loading ? (
-        <Text style={styles.loadingHint}>Dang cap nhat du lieu...</Text>
+        <Text style={styles.loadingHint}>Đang cập nhật dữ liệu...</Text>
       ) : null}
     </ScrollView>
   );

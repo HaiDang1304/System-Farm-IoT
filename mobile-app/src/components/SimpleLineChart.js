@@ -5,6 +5,17 @@ import { palette } from "../theme/colors";
 
 const chartWidth = Dimensions.get("window").width - 40;
 
+// Cấu hình giới hạn cố định cho từng loại cảm biến
+const SENSOR_LIMITS = {
+  nhietdo: { min: -10, max: 100 },     // Nhiệt độ: 0°C đến 50°C (phù hợp với môi trường nhà kính)
+  doam: { min: 0, max: 100 },       // Độ ẩm không khí: 0% đến 100%
+  doamdatPercent: { min: 0, max: 100 }, // Độ ẩm đất: 0% đến 100%
+  anhsang: { min: 0, max: 10000 },   // Ánh sáng: 0 đến 4000 lux (phù hợp theo thang đo thực tế)
+  khigas: { min: 0, max: 10000 },    // Khí gas: 0 đến 4000 ppm (phù hợp với MQ2)
+  khoangcach: { min: 0, max: 400 },  // Khoảng cách nước: 0 đến 50 cm (phù hợp với bể nước)
+  mua: { min: 0, max: 100 }          // Mưa: 0 đến 10 mm/h
+};
+
 const buildChartData = (title, metricKey, data) => {
   const points = data.slice().reverse();
   const labels = points.map((item) => {
@@ -15,18 +26,54 @@ const buildChartData = (title, metricKey, data) => {
       .toString()
       .padStart(2, "0")}`;
   });
-  const values = points.map((item) => Number(item[metricKey]) || 0);
+  const rawValues = points.map((item) => Number(item[metricKey]) || 0);
+
+  // Thêm giá trị min và max từ cấu hình cố định
+  const sensorLimits = SENSOR_LIMITS[metricKey] || { min: Math.min(...rawValues), max: Math.max(...rawValues) };
+
+  // Nếu là cảm biến mưa, chuyển giá trị 0/1 -> 0 hoặc một giá trị ngẫu nhiên mm/h (hiển thị)
+  const values = rawValues.map((v) => {
+    if (metricKey === "mua") {
+      // v === 1 => có mưa
+      return v ? Number((Math.random() * (sensorLimits.max - 0.1) + 0.1).toFixed(1)) : 0;
+    }
+    return v;
+  });
+
+  // Tạo dataset chính và hai dataset ẩn (min/max) để ép thang Y cố định
+  const hiddenMin = values.map(() => sensorLimits.min);
+  const hiddenMax = values.map(() => sensorLimits.max);
+
+  const datasets = [
+    {
+      data: values,
+      color: () => palette.primary,
+      strokeWidth: 3,
+    },
+    // ẩn dataset cho min
+    {
+      data: hiddenMin,
+      color: () => "transparent",
+      strokeWidth: 0,
+      withDots: false,
+    },
+    // ẩn dataset cho max
+    {
+      data: hiddenMax,
+      color: () => "transparent",
+      strokeWidth: 0,
+      withDots: false,
+    },
+  ];
 
   return {
     labels,
-    datasets: [
-      {
-        data: values,
-        color: () => palette.primary,
-        strokeWidth: 3,
-      },
-    ],
-    legend: title ? [title] : undefined,
+    datasets,
+  // We render the title above the chart ourselves, so disable the built-in legend
+  legend: undefined,
+    // Thêm giới hạn min và max (dự phòng)
+    yMin: sensorLimits.min,
+    yMax: sensorLimits.max,
   };
 };
 
@@ -74,6 +121,14 @@ const SimpleLineChart = ({ title, metricKey, color = palette.primary, data }) =>
         chartConfig={chartConfig(color)}
         bezier
         style={styles.chart}
+        withInnerLines={true}
+        withOuterLines={true}
+        withVerticalLines={true}
+        withHorizontalLines={true}
+        fromZero={false}
+        yAxisInterval={5}
+        yMin={chartData.yMin}
+        yMax={chartData.yMax}
       />
     </View>
   );

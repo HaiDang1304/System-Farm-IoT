@@ -73,16 +73,16 @@ const ProfileScreen = () => {
   const anyEnabled = enabledCount > 0;
 
   const handleLogout = useCallback(() => {
-    Alert.alert("Dang xuat", "Ban chac chan muon dang xuat?", [
-      { text: "Huy", style: "cancel" },
+    Alert.alert("Đăng xuất", "Bạn chắc chắn muốn đăng xuất?", [
+      { text: "Hủy", style: "cancel" },
       {
-        text: "Dang xuat",
+        text: "Đăng xuất",
         style: "destructive",
         onPress: async () => {
           try {
             await logout();
           } catch (error) {
-            Alert.alert("Khong the dang xuat", error.message);
+            Alert.alert("Không thể đăng xuất", error.message);
           }
         },
       },
@@ -97,9 +97,9 @@ const ProfileScreen = () => {
       try {
         await updateNotificationSettings(user.uid, nextState);
       } catch (error) {
-        console.error("Khong the cap nhat cai dat:", error);
+        console.error("Không thể cài đặt cập nhật:", error);
         setSettingsError(
-          error.message || "Khong the cap nhat cai dat thong bao."
+          error.message || "Không thể cài đặt cập nhật thông báo."
         );
       } finally {
         setSyncing(false);
@@ -162,9 +162,9 @@ const ProfileScreen = () => {
         }
       } catch (error) {
         if (!isMounted) return;
-        console.error("Khong the tai cai dat:", error);
+        console.error("Không thể tải cài đặt:", error);
         setSettingsError(
-          error.message || "Khong the tai cai dat thong bao."
+          error.message || "Không thể tải cài đặt thông báo."
         );
       } finally {
         if (isMounted) {
@@ -188,11 +188,11 @@ const ProfileScreen = () => {
         <Text style={styles.value}>{user?.email || "--"}</Text>
         <Text style={styles.label}>Trang thai</Text>
         <Text style={styles.value}>
-          {user?.emailVerified ? "Da xac minh" : "Chua xac minh"}
+          {user?.emailVerified ? "Đã xác minh" : "Chưa xác minh"}
         </Text>
         {user?.uid ? (
           <>
-            <Text style={styles.label}>Ma tai khoan</Text>
+            <Text style={styles.label}>Mã tài khoản</Text>
             <Text style={styles.valueMonospace}>{user.uid}</Text>
           </>
         ) : null}
@@ -201,9 +201,9 @@ const ProfileScreen = () => {
       <View style={styles.card}>
         <View style={styles.settingsHeader}>
           <View style={styles.settingsHeaderText}>
-            <Text style={styles.title}>Cai dat thong bao</Text>
+            <Text style={styles.title}>Cài đặt thông báo</Text>
             <Text style={styles.subtitle}>
-              Bat/tat thong bao cho tung nhom cam bien.
+              Bật/Tắt thông báo cho từng nhóm cảm biến.
             </Text>
           </View>
           <Switch
@@ -221,17 +221,17 @@ const ProfileScreen = () => {
         <View style={styles.statusRow}>
           <View style={styles.statusBadge}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusLabel}>Dang hoat dong</Text>
+            <Text style={styles.statusLabel}>Đăng hoạt động</Text>
           </View>
           <Text style={styles.statusValue}>
-            {enabledCount}/{NOTIFICATION_ITEMS.length} cam bien
+            {enabledCount}/{NOTIFICATION_ITEMS.length} cảm biến
           </Text>
         </View>
 
         {loadingSettings ? (
           <View style={styles.loadingRow}>
             <ActivityIndicator color={palette.primary} />
-            <Text style={styles.loadingText}>Dang tai cai dat...</Text>
+            <Text style={styles.loadingText}>Đang tải cài đặt...</Text>
           </View>
         ) : (
           NOTIFICATION_ITEMS.map((item) => {
@@ -280,12 +280,12 @@ const ProfileScreen = () => {
           <Text style={styles.errorText}>{settingsError}</Text>
         ) : null}
         {syncing ? (
-          <Text style={styles.syncHint}>Dang dong bo cai dat...</Text>
+          <Text style={styles.syncHint}>Đang đồng bộ cài đặt...</Text>
         ) : null}
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutLabel}>Dang xuat</Text>
+        <Text style={styles.logoutLabel}>Đăng xuất</Text>
       </TouchableOpacity>
     </ScrollView>
   );

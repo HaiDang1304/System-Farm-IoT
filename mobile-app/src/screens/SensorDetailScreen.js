@@ -144,16 +144,6 @@ const SensorDetailScreen = ({ route, navigation }) => {
         ))}
       </View>
 
-      {config.metrics.map((metric) => (
-        <SimpleLineChart
-          key={`${metric.key}-chart`}
-          data={data}
-          metricKey={metric.key}
-          color={metric.color}
-          title={`Xu hướng ${metric.label.toLowerCase()}`}
-        />
-      ))}
-
       {config.controls?.length ? (
         <View style={styles.controlsWrapper}>
           <Text style={styles.sectionTitle}>Điều khiển thiết bị</Text>
