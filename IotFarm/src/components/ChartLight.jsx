@@ -58,7 +58,8 @@ const ChartLight = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 20000); // cập nhật mỗi 5 giây
+    const interval = setInterval(fetchData, 20000); 
+
     return () => clearInterval(interval);
   }, []);
 
@@ -92,3 +93,5 @@ const ChartLight = () => {
 };
 
 export default ChartLight;
+
+

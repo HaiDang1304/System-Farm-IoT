@@ -102,3 +102,5 @@ const ChartDHT22 = () => {
 };
 
 export default ChartDHT22;
+
+

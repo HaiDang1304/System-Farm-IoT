@@ -19,7 +19,7 @@ const ChartSoilMoisture = () => {
     labels: [],
     datasets: [
       {
-        label: "Độ ẩm đất",
+        label: "Do am dat (%)",
         data: [],
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
@@ -34,7 +34,7 @@ const ChartSoilMoisture = () => {
       const data = await res.json();
 
       if (Array.isArray(data)) {
-        // Lấy thời gian từ timestamp
+        // Lay thoi gian tu timestamp
         const labels = data
           .map((item) =>
             item.timestamp
@@ -43,8 +43,20 @@ const ChartSoilMoisture = () => {
           )
           .reverse();
 
-        // Lấy dữ liệu độ ẩm đất
-        const soilMoisture = data.map((item) => item.doamdat).reverse();
+        // Lay du lieu do am dat
+        const soilMoisture = data
+          .map((item) => {
+            if (typeof item.doamdatPercent === "number") {
+              return Number(item.doamdatPercent.toFixed(1));
+            }
+            if (typeof item.doamdat === "number") {
+              const percent = (item.doamdat / 4095) * 100;
+              const clamped = Math.min(100, Math.max(0, percent));
+              return Number(clamped.toFixed(1));
+            }
+            return null;
+          })
+          .reverse();
 
         setChartData({
           labels,
@@ -85,7 +97,7 @@ const ChartSoilMoisture = () => {
           },
           scales: {
             x: { title: { display: true, text: "Thời gian" } },
-            y: { beginAtZero: true, title: { display: true, text: "Độ ẩm đất" } },
+            y: { beginAtZero: true, title: { display: true, text: "Do am dat (%)" } },
           },
         }}
       />
@@ -94,3 +106,12 @@ const ChartSoilMoisture = () => {
 };
 
 export default ChartSoilMoisture;
+
+
+
+
+
+
+
+
+

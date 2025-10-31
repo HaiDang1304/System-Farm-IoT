@@ -5,7 +5,7 @@ const API_URL = "http://localhost:3000/data";
 const CONTROL_URL = "http://localhost:3000/control";
 
 const SoilMoistureSensor = () => {
-  const [sensorData, setSensorData] = useState({ doamdat: 0 });
+  const [sensorData, setSensorData] = useState({ doamdat: 0, doamdatPercent: 0 });
   const [isPumpOn, setIsPumpOn] = useState(false);
   const [autoMode, setAutoMode] = useState(false);
   const [threshold, setThreshold] = useState(2000);
@@ -211,3 +211,8 @@ const SoilMoistureSensor = () => {
 };
 
 export default SoilMoistureSensor;
+
+
+
+
+

@@ -29,4 +29,4 @@ export const API_BASE_URL = normalizeLocalhostForPlatform(
   preferredUrl || "http://localhost:3000"
 );
 
-export const REFRESH_INTERVAL = Number(extra.refreshInterval ?? 5000);
+export const REFRESH_INTERVAL = Number(extra.refreshInterval ?? 30000);

@@ -83,40 +83,60 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const credential = await signInWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password
-    );
-    await credential.user.reload();
-
-    if (!credential.user.emailVerified) {
-      await signOut(auth);
-      throw new Error(
-        "Email chưa được xác minh. Vui lòng kiểm tra hộp thư và xác nhận tài khoản."
+    try {
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
       );
-    }
+      await credential.user.reload();
 
-    await persistUserProfile(credential.user, "password");
-    setUser(credential.user);
-    return credential.user;
+      if (!credential.user.emailVerified) {
+        await signOut(auth);
+        throw new Error(
+          "Email chưa được xác minh. Vui lòng kiểm tra hộp thư và xác nhận tài khoản."
+        );
+      }
+
+      await persistUserProfile(credential.user, "password");
+      setUser(credential.user);
+      return credential.user;
+    } catch (error) {
+      console.warn("Auth login error:", error);
+      if (error?.code === "auth/network-request-failed") {
+        throw new Error(
+          "Lỗi mạng khi kết nối tới Firebase. Vui lòng kiểm tra kết nối Internet và thời gian hệ thống."
+        );
+      }
+      throw error;
+    }
   };
 
   const register = async (email, password) => {
-    const credential = await createUserWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password
-    );
+    try {
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
 
-    await persistUserProfile(credential.user, "password", {
-      createdAt: new Date().toISOString(),
-      type: "password",
-    });
-    await sendEmailVerification(credential.user);
-    await signOut(auth);
-    setUser(null);
-    return credential.user;
+      await persistUserProfile(credential.user, "password", {
+        createdAt: new Date().toISOString(),
+        type: "password",
+      });
+      await sendEmailVerification(credential.user);
+      await signOut(auth);
+      setUser(null);
+      return credential.user;
+    } catch (error) {
+      console.warn("Auth register error:", error);
+      if (error?.code === "auth/network-request-failed") {
+        throw new Error(
+          "Lỗi mạng khi kết nối tới Firebase. Vui lòng kiểm tra kết nối Internet và thử lại."
+        );
+      }
+      throw error;
+    }
   };
 
   const loginWithGoogle = async () => {
@@ -129,7 +149,7 @@ export const AuthProvider = ({ children }) => {
       const result = await promptGoogleLogin();
 
       if (!result || result.type !== "success") {
-        throw new Error("Đăng nhập Google đã bị hủy.");
+        throw new Error("Đăng nhập Google đã bị hủy hoặc không nhận token.");
       }
 
       const idToken = result.params?.id_token;
@@ -146,7 +166,13 @@ export const AuthProvider = ({ children }) => {
       setUser(authResult.user);
       return authResult.user;
     } catch (error) {
+      console.warn("Auth Google login error:", error);
       setAuthError(error);
+      if (error?.code === "auth/network-request-failed") {
+        throw new Error(
+          "Lỗi mạng khi kết nối tới Firebase. Vui lòng kiểm tra kết nối Internet và thử lại."
+        );
+      }
       throw error;
     }
   };

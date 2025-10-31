@@ -33,7 +33,7 @@ const Home = () => {
 
     fetchData();
     // Tự động cập nhật mỗi giây
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
     return () => clearInterval(interval);
   }, []);
 
@@ -48,6 +48,19 @@ const Home = () => {
   const timeString = sensorData.timestamp?._seconds
     ? new Date(sensorData.timestamp._seconds * 1000).toLocaleTimeString()
     : "N/A";
+
+  const soilMoisturePercent =
+    typeof sensorData?.doamdatPercent === "number"
+      ? sensorData.doamdatPercent
+      : typeof sensorData?.doamdat === "number"
+      ? (sensorData.doamdat / 4095) * 100
+      : null;
+  const soilMoisturePercentRounded =
+    soilMoisturePercent !== null
+      ? Math.min(100, Math.max(0, Number(soilMoisturePercent.toFixed(1))))
+      : null;
+  const isSoilDry = soilMoisturePercentRounded !== null && soilMoisturePercentRounded < 40;
+
 
   return (
     <div className="bg-gray-50 p-8">
@@ -100,7 +113,9 @@ const Home = () => {
               <path d="M256 144C256 117.5 277.5 96 304 96L336 96C362.5 96 384 117.5 384 144L384 496C384 522.5 362.5 544 336 544L304 544C277.5 544 256 522.5 256 496L256 144zM64 336C64 309.5 85.5 288 112 288L144 288C170.5 288 192 309.5 192 336L192 496C192 522.5 170.5 544 144 544L112 544C85.5 544 64 522.5 64 496L64 336zM496 160L528 160C554.5 160 576 181.5 576 208L576 496C576 522.5 554.5 544 528 544L496 544C469.5 544 448 522.5 448 496L448 208C448 181.5 469.5 160 496 160z" />
             </svg>
             Trạng thái:{" "}
-            <span className="text-gray-700 font-medium">Ổn định</span>
+            <span className="text-gray-700 font-medium">
+              {isSoilDry ? "Can tuoi som" : "Binh thuong"}
+            </span>
           </p>
           <p className="flex gap-2">
             <svg
@@ -133,7 +148,7 @@ const Home = () => {
             </svg>
             Độ ẩm đất:{" "}
             <span className="text-blue-500 font-semibold">
-              {sensorData.doamdat}%
+              {soilMoisturePercentRounded !== null ? soilMoisturePercentRounded : "--"}%
             </span>
           </p>
           <p className="flex gap-2">
@@ -146,7 +161,7 @@ const Home = () => {
             </svg>
             Đánh giá:{" "}
             <span className="text-yellow-600 font-medium">
-              {sensorData.doamdat < 40 ? "Hơi khô" : "Ổn định"}
+              {isSoilDry ? "Hoi kho" : "On dinh"}
             </span>
           </p>
           <p className="flex gap-2">
@@ -159,7 +174,7 @@ const Home = () => {
             </svg>
             Trạng thái:{" "}
             <span className="text-gray-700 font-medium">
-              {sensorData.doamdat < 40 ? "Cần tưới sớm" : "Bình thường"}
+              {isSoilDry ? "Can tuoi som" : "Binh thuong"}
             </span>
           </p>
           <p className="flex gap-2">
@@ -218,7 +233,9 @@ const Home = () => {
               <path d="M256 144C256 117.5 277.5 96 304 96L336 96C362.5 96 384 117.5 384 144L384 496C384 522.5 362.5 544 336 544L304 544C277.5 544 256 522.5 256 496L256 144zM64 336C64 309.5 85.5 288 112 288L144 288C170.5 288 192 309.5 192 336L192 496C192 522.5 170.5 544 144 544L112 544C85.5 544 64 522.5 64 496L64 336zM496 160L528 160C554.5 160 576 181.5 576 208L576 496C576 522.5 554.5 544 528 544L496 544C469.5 544 448 522.5 448 496L448 208C448 181.5 469.5 160 496 160z" />
             </svg>
             Trạng thái:{" "}
-            <span className="text-gray-700 font-medium">Ổn định</span>
+            <span className="text-gray-700 font-medium">
+              {isSoilDry ? "Can tuoi som" : "Binh thuong"}
+            </span>
           </p>
           <p className="flex gap-2">
             <svg
@@ -305,7 +322,7 @@ const Home = () => {
             </svg>
             Cường độ:{" "}
             <span className="text-gray-700 font-medium">
-              {sensorData.mua} mm/h
+              {isSoilDry ? "Can tuoi som" : "Binh thuong"}
             </span>
           </p>
           <p className="flex gap-2">
@@ -381,3 +398,8 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
+
+

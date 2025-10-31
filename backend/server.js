@@ -162,7 +162,7 @@ app.post("/control", (req, res) => {
 app.post("/updateSettings", async (req, res) => {
   try {
     const { userId, settings } = req.body;
-    console.log("🔧 Cập nhật settings cho:", userId, settings);
+    console.log(" Cập nhật settings cho:", userId, settings);
 
     if (!userId || !settings)
       return res.status(400).json({ error: "Thiếu userId hoặc settings" });
@@ -205,16 +205,16 @@ const sendAlertMail = async (subject, alerts, recipients) => {
 
   // Hàm phụ chọn màu icon dựa theo loại cảnh báo
   const getColor = (msg) => {
-    if (msg.includes("Nhiệt độ")) return "#ef4444"; // đỏ
-    if (msg.includes("Khí gas")) return "#f59e0b"; // vàng
-    if (msg.includes("Ánh sáng")) return "#facc15"; // vàng sáng
-    if (msg.includes("Mực nước")) return "#3b82f6"; // xanh dương
-    if (msg.includes("Độ ẩm đất")) return "#10b981"; // xanh lá
-    if (msg.includes("mưa")) return "#6366f1"; // tím
-    return "#6b7280"; // xám mặc định
+    if (msg.includes("Nhiệt độ")) return "#ef4444"; 
+    if (msg.includes("Khí gas")) return "#f59e0b"; 
+    if (msg.includes("Ánh sáng")) return "#facc15"; 
+    if (msg.includes("Mực nước")) return "#3b82f6"; 
+    if (msg.includes("Độ ẩm đất")) return "#10b981"; 
+    if (msg.includes("mưa")) return "#6366f1";
+    return "#6b7280"; 
   };
 
-  // Tạo HTML nội dung email
+
   const htmlContent = `
   <div style="font-family: 'Poppins', sans-serif; background-color: #f9fafb; padding: 24px;">
     <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden;">
@@ -275,6 +275,17 @@ const checkThresholdAndNotify = async () => {
 
     const alerts = [];
 
+    const soilPercent =
+      typeof data?.doamdatPercent === "number"
+        ? data.doamdatPercent
+        : typeof data?.doamdat === "number"
+        ? Math.min(100, Math.max(0, (data.doamdat / 4095) * 100))
+        : null;
+    const soilThresholdPercent =
+      typeof data?.nguongbatmaybomtuoicay === "number"
+        ? Math.min(100, Math.max(0, (data.nguongbatmaybomtuoicay / 4095) * 100))
+        : null;
+
     if (data.nhietdo > data.nguongbatdieuhoa)
       alerts.push(
         `Nhiệt độ cao: ${data.nhietdo}°C > ${data.nguongbatdieuhoa}°C`
@@ -289,7 +300,9 @@ const checkThresholdAndNotify = async () => {
       );
     if (data.doamdat < data.nguongbatmaybomtuoicay)
       alerts.push(
-        ` Độ ẩm đất thấp: ${data.doamdat} < ${data.nguongbatmaybomtuoicay}`
+        soilPercent !== null && soilThresholdPercent !== null
+          ? `Do am dat thap: ${soilPercent.toFixed(1)}% < ${soilThresholdPercent.toFixed(1)}%`
+          : `Do am dat thap: ${data.doamdat} < ${data.nguongbatmaybomtuoicay}`
       );
     if (data.mua === 1) alerts.push(` Phát hiện mưa!`);
 
@@ -317,7 +330,7 @@ const checkThresholdAndNotify = async () => {
 
     await sendAlertMail(
       " Cảnh báo cảm biến nông trại",
-      alerts, // truyền mảng trực tiếp
+      alerts, 
       recipients
     );
   } catch (err) {
@@ -326,10 +339,15 @@ const checkThresholdAndNotify = async () => {
 };
 
 // ====== CHẠY KIỂM TRA ĐỊNH KỲ ======
-setInterval(checkThresholdAndNotify, 30 * 1000); // 30s 1 lần
+setInterval(checkThresholdAndNotify, 30 * 1000); 
 
 // ====== KHỞI CHẠY SERVER ======
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(` Server đang chạy tại http://localhost:${PORT}`);
 });
+
+
+
+
+

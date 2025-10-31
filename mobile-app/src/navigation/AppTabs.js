@@ -39,12 +39,12 @@ const AppTabs = () => {
       <Tab.Screen
         name="Sensors"
         component={SensorsScreen}
-        options={{ tabBarLabel: "Cảm biến" }}
+        options={{ tabBarLabel: "Thống kê" }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: "Tài khoản" }}
+        options={{ tabBarLabel: "Cài đặt" }}
       />
     </Tab.Navigator>
   );

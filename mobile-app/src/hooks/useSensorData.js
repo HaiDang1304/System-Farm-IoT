@@ -30,7 +30,20 @@ export const useSensorData = (intervalMs = REFRESH_INTERVAL) => {
       setError(null);
       const response = await fetchSensorData();
       const normalized = response.map(normalizeEntry);
-      setData(normalized);
+      const withDerived = normalized.map((entry) => {
+        if (typeof entry.doamdatPercent === "number") {
+          return entry;
+        }
+        if (typeof entry.doamdat === "number") {
+          const percent = Math.min(
+            100,
+            Math.max(0, (entry.doamdat / 4095) * 100)
+          );
+          return { ...entry, doamdatPercent: percent };
+        }
+        return { ...entry, doamdatPercent: null };
+      });
+      setData(withDerived);
     } catch (err) {
       console.error("Không thể tải dữ liệu cảm biến:", err);
       setError(err);
