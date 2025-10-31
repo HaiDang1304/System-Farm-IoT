@@ -44,7 +44,7 @@ const GasSensor = () => {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 30000); // cap nhat moi 30 giay
+    const interval = setInterval(fetchData, 30000); 
     return () => clearInterval(interval);
   }, []);
 
